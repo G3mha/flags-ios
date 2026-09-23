@@ -57,3 +57,25 @@ import Testing
     let names = Countries.flags.map(\.name)
     #expect(names == names.sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending })
 }
+
+@Test func defaultFlagIsBrazil() throws {
+    let flag = try #require(Flag.default)
+    #expect(flag.id.code == "br")
+}
+
+@Test func entityRoundTripsToItsFlag() throws {
+    let brazil = try #require(Flag.default)
+    let entity = FlagEntity(flag: brazil)
+    #expect(entity.id == "countries/br")
+    #expect(entity.flag == brazil)
+}
+
+@Test func entityQueryResolvesIdentifiers() async throws {
+    let results = try await FlagEntityQuery().entities(for: ["countries/br", "countries/nope"])
+    #expect(results.map(\.id) == ["countries/br"])
+}
+
+@Test func entityQuerySearchesByName() async throws {
+    let results = try await FlagEntityQuery().entities(matching: "braz")
+    #expect(results.first?.id == "countries/br")
+}
