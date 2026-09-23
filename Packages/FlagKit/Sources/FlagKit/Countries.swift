@@ -36,11 +36,23 @@ public enum Countries: FlagCollection {
                 return Flag(
                     id: FlagID(collection: id, code: code),
                     name: name,
-                    artwork: .emoji(emoji(for: code)),
+                    artwork: artwork(for: code),
                     abbreviation: code.uppercased()
                 )
             }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    /// Real artwork where we have it, emoji otherwise.
+    ///
+    /// The bundled set does not cover every region `Locale` lists, and it
+    /// gains flags over time, so the fallback is permanent rather than
+    /// temporary scaffolding.
+    static func artwork(for code: String) -> FlagArtwork {
+        let code = code.lowercased()
+        return CountryAssets.available.contains(code)
+            ? .asset(name: "flag-\(code)")
+            : .emoji(emoji(for: code))
     }
 
     /// "BR" -> "🇧🇷". Regional indicator symbols sit at U+1F1E6, which is

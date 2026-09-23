@@ -37,7 +37,7 @@ import Testing
 @Test func countriesIncludeBrazilWithAnAbbreviation() throws {
     let brazil = try #require(FlagRegistry.shared.flag(for: FlagID(collection: "countries", code: "br")))
     #expect(brazil.abbreviation == "BR")
-    #expect(brazil.artwork == .emoji("🇧🇷"))
+    #expect(brazil.artwork == .asset(name: "flag-br"))
 }
 
 @Test func countryListIsPlausiblySized() {
@@ -78,4 +78,22 @@ import Testing
 @Test func entityQuerySearchesByName() async throws {
     let results = try await FlagEntityQuery().entities(matching: "braz")
     #expect(results.first?.id == "countries/br")
+}
+
+@Test func artworkPrefersABundledAssetAndFallsBackToEmoji() {
+    #expect(Countries.artwork(for: "BR") == .asset(name: "flag-br"))
+    // Not in the bundled set, so it has to fall back rather than reference a
+    // missing asset - Image would render nothing at all.
+    #expect(Countries.artwork(for: "zz") == .emoji("\u{1F1FF}\u{1F1FF}"))
+}
+
+@Test func everyBundledAssetNameIsReferencedByExactlyOneFlag() {
+    let assetNames = Set(Countries.flags.compactMap { flag -> String? in
+        if case .asset(let name) = flag.artwork { return name }
+        return nil
+    })
+    // Every flag that claims an asset must name a distinct one.
+    let claimed = Countries.flags.filter { if case .asset = $0.artwork { return true } else { return false } }
+    #expect(assetNames.count == claimed.count)
+    #expect(!assetNames.isEmpty)
 }
