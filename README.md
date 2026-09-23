@@ -73,10 +73,14 @@ without that Xcode rasterises up to 1536 and the catalogue is 7.8MB instead of
 2.6MB. 160 x 3 = 480px, which is what the largest use — an iOS `systemSmall`
 widget at 3x — actually needs.
 
-Size is worth watching. FlagKit links statically, so each target that uses it
-carries its own 2.6MB copy: the watch app is 6.5MB and the iOS app 20MB
-including the embedded watch app. Making FlagKit a dynamic library would share
-one copy, at the cost of launch time in a complication.
+Size is worth watching. Every target that links FlagKit carries its own 2.6MB
+copy of the catalogue, so the watch app is 6.5MB and the iOS app 20MB
+including the embedded watch app.
+
+Making FlagKit a dynamic library does not fix this. Measured: the watch app
+goes to 5.6MB, and that 0.9MB is deduplicated code — SPM still copies the
+resource bundle into the extension. Not worth the launch cost in a
+complication, so FlagKit stays static.
 
 ## Building
 
