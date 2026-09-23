@@ -97,3 +97,95 @@ import Testing
     #expect(assetNames.count == claimed.count)
     #expect(!assetNames.isEmpty)
 }
+
+// MARK: - Regional restrictions
+
+@Test func noFlagIsWithheldGlobally() {
+    // Empty by decision, not by oversight. If this ever fails, someone added
+    // a global exclusion and should have said why in Countries.excluded.
+    #expect(Countries.excluded.isEmpty)
+}
+
+@Test func taiwanIsWithheldOnChinaMainland() {
+    #expect(Countries.restriction(for: "tw", deviceRegion: "CN") == .withheld)
+}
+
+@Test func taiwanIsUnlistedButResolvableInHongKongAndMacao() {
+    // Apple hides it from the emoji keyboard there but still renders it, so a
+    // complication already configured with it keeps working.
+    #expect(Countries.restriction(for: "tw", deviceRegion: "HK") == .unlisted)
+    #expect(Countries.restriction(for: "tw", deviceRegion: "MO") == .unlisted)
+}
+
+@Test func taiwanIsUnrestrictedEverywhereElse() {
+    for region in ["US", "BR", "GB", "JP", "SE", "TW"] {
+        #expect(Countries.restriction(for: "tw", deviceRegion: region) == nil, "restricted in \(region)")
+    }
+}
+
+@Test func restrictionLookupIgnoresCasing() {
+    #expect(Countries.restriction(for: "TW", deviceRegion: "cn") == .withheld)
+}
+
+@Test func onlyTaiwanIsRestrictedAnywhere() {
+    // Guards against the restriction table quietly growing. Every addition is
+    // a political call and should be argued for, not slipped in.
+    let restricted = Set(Countries.restrictions.values.flatMap(\.keys))
+    #expect(restricted == ["tw"])
+}
+
+@Test func unlistedFlagsResolveButAreNotOffered() {
+    let hidden = Flag(
+        id: FlagID(collection: "stub", code: "hh"),
+        name: "Hidden",
+        artwork: .emoji("H"),
+        abbreviation: "HH",
+        isListed: false
+    )
+    struct Stub: FlagCollection {
+        static let id = "stub"
+        static let displayName = "Stub"
+        nonisolated(unsafe) static var flags: [Flag] = []
+    }
+    Stub.flags = [hidden]
+    let registry = FlagRegistry(collections: [Stub.self])
+
+    #expect(registry.flag(for: hidden.id) == hidden)   // still resolves
+    #expect(registry.listedFlags.isEmpty)              // not offered
+    #expect(registry.search("hidden").isEmpty)         // not searchable
+    #expect(registry.search("").isEmpty)               // not suggested
+}
+
+@Test func palestineKosovoAndWesternSaharaAllShip() {
+    // Present in the system region list and in flag-icons. Shipping the
+    // standard list rather than curating it is the whole position.
+    for code in ["ps", "il", "xk", "eh"] {
+        #expect(FlagRegistry.shared.flag(for: FlagID(collection: "countries", code: code)) != nil, "missing \(code)")
+    }
+}
+
+@Test func chinaMainlandBuildOmitsTaiwanEntirely() {
+    let codes = Countries.build(deviceRegion: "CN").map(\.id.code)
+    #expect(!codes.contains("tw"))
+    #expect(codes.contains("cn"))
+    #expect(codes.contains("hk"))
+}
+
+@Test func hongKongBuildKeepsTaiwanButUnlisted() throws {
+    let flags = Countries.build(deviceRegion: "HK")
+    let taiwan = try #require(flags.first { $0.id.code == "tw" })
+    #expect(taiwan.isListed == false)
+}
+
+@Test func unrestrictedRegionBuildListsTaiwanNormally() throws {
+    let taiwan = try #require(Countries.build(deviceRegion: "BR").first { $0.id.code == "tw" })
+    #expect(taiwan.isListed)
+}
+
+@Test func onlyTaiwanDiffersBetweenRegionBuilds() {
+    // The restriction table should change exactly one flag, nothing else.
+    let open = Set(Countries.build(deviceRegion: "BR").map(\.id.code))
+    let china = Set(Countries.build(deviceRegion: "CN").map(\.id.code))
+    #expect(open.subtracting(china) == ["tw"])
+    #expect(china.subtracting(open).isEmpty)
+}
