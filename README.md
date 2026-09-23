@@ -58,14 +58,37 @@ enum Clubs: FlagCollection {
 
 Flag IDs are `collection/code`, so `countries/br` and `clubs/palmeiras` coexist.
 
-Note that club crests are trademarked in a way country flags aren't. That's a
-licensing problem, not a coding one.
+## Flag politics
+
+Flags are political and Apple has pulled apps over specific ones, so this
+needed a position rather than a default.
+
+The position is that shipping the standard list is more defensible than
+curating it. The basis is the system's own region list rather than our
+judgement about who counts as a country, so `Countries.excluded` is empty and
+stays that way. Palestine, Kosovo and Western Sahara all ship. Pulling a flag
+worldwide to satisfy one storefront would cost every user while making that
+neutral basis harder to defend, not easier.
+
+The one exception is where the platform already restricts, and there we
+restrict the same way. Apple removes the Taiwan flag from the system emoji
+font on devices set to China mainland, and hides it from the emoji keyboard in
+Hong Kong and Macau while still rendering it. While artwork was emoji we
+inherited all of that for free; bundling SVGs took the responsibility on.
+`Countries.restrictions` restores it, with the two tiers kept distinct — an
+already-configured complication in Hong Kong keeps working.
+
+`Countries.excluded` is where a takedown request should land. A test asserts
+it's empty, so filling it is a deliberate act with a reason attached.
+
+Club crests and game logos are trademarked in a way country flags aren't.
+That's a licensing problem for those packs, not a coding one.
 
 ## Artwork
 
 257 country flags from [flag-icons](https://github.com/lipis/flag-icons) (MIT),
 bundled as SVG. Anything that set doesn't cover falls back to emoji derived
-from the ISO 3166-1 code, so every country has a flag either way.
+from the region code, so every country has a flag either way.
 
 [`Tools/fetch-flags.sh`](Tools/fetch-flags.sh) regenerates the catalogue and
 pins the flag-icons version. It caps each SVG's intrinsic size at 160pt:
@@ -91,10 +114,11 @@ xcodebuild build -project Flags.xcodeproj -scheme Flags -destination 'generic/pl
 
 ## Before shipping
 
-- `Countries.excluded` is empty. Flags are political and Apple has pulled apps
-  over specific ones. Audit that list deliberately rather than shipping
-  whatever `Locale` happens to return.
-- The country list comes from `Locale`, so it shifts with the OS version.
+- The region list comes from `Locale`, so it shifts with the OS version. It's
+  close to ISO 3166-1 but not identical — `XK` for Kosovo is a user-assigned
+  code the standard doesn't define. A test asserts the count stays between
+  200 and 400 so an OS change can't quietly empty or explode it.
+- App icons are placeholders.
 
 ## Licence
 
