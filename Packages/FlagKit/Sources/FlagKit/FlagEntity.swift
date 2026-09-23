@@ -43,7 +43,7 @@ public struct FlagEntityQuery: EntityStringQuery, Sendable {
     }
 
     public func suggestedEntities() async throws -> [FlagEntity] {
-        FlagRegistry.shared.allFlags.map(FlagEntity.init(flag:))
+        FlagRegistry.shared.listedFlags.map(FlagEntity.init(flag:))
     }
 
     public func defaultResult() async -> FlagEntity? {

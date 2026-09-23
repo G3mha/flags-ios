@@ -4,7 +4,7 @@ import SwiftUI
 struct WatchFlagBrowser: View {
     var body: some View {
         NavigationStack {
-            List(FlagRegistry.shared.allFlags) { flag in
+            List(FlagRegistry.shared.listedFlags) { flag in
                 HStack(spacing: 10) {
                     FlagView(flag: flag, shape: .circle)
                         .frame(width: 26, height: 26)

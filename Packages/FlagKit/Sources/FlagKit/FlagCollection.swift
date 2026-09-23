@@ -24,8 +24,15 @@ public struct FlagRegistry: Sendable {
         self.collections = collections
     }
 
+    /// Everything that resolves, including flags not offered in pickers.
+    /// Use `listedFlags` for anything the user picks from.
     public var allFlags: [Flag] {
         collections.flatMap { $0.flags }
+    }
+
+    /// What a picker should offer.
+    public var listedFlags: [Flag] {
+        allFlags.filter(\.isListed)
     }
 
     public func collection(id: String) -> (any FlagCollection.Type)? {
@@ -39,11 +46,11 @@ public struct FlagRegistry: Sendable {
     /// Prefix matches first, so typing "bra" puts Brazil above Gibraltar.
     public func search(_ query: String, limit: Int = 50) -> [Flag] {
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
-        guard !q.isEmpty else { return Array(allFlags.prefix(limit)) }
+        guard !q.isEmpty else { return Array(listedFlags.prefix(limit)) }
 
         var prefixed: [Flag] = []
         var contained: [Flag] = []
-        for flag in allFlags where flag.matches(q) {
+        for flag in listedFlags where flag.matches(q) {
             if flag.searchTerms.contains(where: { $0.hasPrefix(q) }) {
                 prefixed.append(flag)
             } else {

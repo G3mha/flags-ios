@@ -47,18 +47,23 @@ public struct Flag: Identifiable, Hashable, Sendable {
     /// Drawn when the system flattens the widget to a single tint, where the
     /// artwork's colours would be lost anyway.
     public let abbreviation: String
+    /// False for a flag that still resolves and draws, but is not offered in
+    /// a picker. See `Countries.restrictions` for the only current use.
+    public let isListed: Bool
 
     public init(
         id: FlagID,
         name: String,
         searchTerms: [String] = [],
         artwork: FlagArtwork,
-        abbreviation: String
+        abbreviation: String,
+        isListed: Bool = true
     ) {
         self.id = id
         self.name = name
         self.artwork = artwork
         self.abbreviation = abbreviation
+        self.isListed = isListed
         self.searchTerms = (searchTerms + [name, id.code]).map { $0.lowercased() }
     }
 
