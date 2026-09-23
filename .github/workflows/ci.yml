@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: FlagKit tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      # FlagKit declares macOS, so its tests run on the host with no simulator
+      # to boot. Keeps the feedback loop short for the part that holds the logic.
+      - run: swift test --package-path Packages/FlagKit
+
+  build:
+    name: Build ${{ matrix.scheme }}
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scheme: Flags
+            destination: generic/platform=iOS
+          - scheme: FlagsWatch
+            destination: generic/platform=watchOS
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          xcodebuild build \
+            -project Flags.xcodeproj \
+            -scheme "${{ matrix.scheme }}" \
+            -configuration Debug \
+            -destination "${{ matrix.destination }}" \
+            CODE_SIGNING_ALLOWED=NO
