@@ -63,14 +63,20 @@ licensing problem, not a coding one.
 
 ## Artwork
 
-Country artwork is emoji derived from the ISO 3166-1 code, so every country
-has a flag with nothing bundled and nothing to license.
+257 country flags from [flag-icons](https://github.com/lipis/flag-icons) (MIT),
+bundled as SVG. Anything that set doesn't cover falls back to emoji derived
+from the ISO 3166-1 code, so every country has a flag either way.
 
-The trade-off is that emoji are drawn by the system font: Apple's design
-rather than ours, no control over detail at complication size, and nothing for
-regions the font omits. [`Tools/fetch-flags.sh`](Tools/fetch-flags.sh) swaps in
-the [flag-icons](https://github.com/lipis/flag-icons) SVG set (MIT) when you
-want that control.
+[`Tools/fetch-flags.sh`](Tools/fetch-flags.sh) regenerates the catalogue and
+pins the flag-icons version. It caps each SVG's intrinsic size at 160pt:
+without that Xcode rasterises up to 1536 and the catalogue is 7.8MB instead of
+2.6MB. 160 x 3 = 480px, which is what the largest use — an iOS `systemSmall`
+widget at 3x — actually needs.
+
+Size is worth watching. FlagKit links statically, so each target that uses it
+carries its own 2.6MB copy: the watch app is 6.5MB and the iOS app 20MB
+including the embedded watch app. Making FlagKit a dynamic library would share
+one copy, at the cost of launch time in a complication.
 
 ## Building
 
