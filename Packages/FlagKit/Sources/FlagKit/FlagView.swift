@@ -52,7 +52,7 @@ public struct FlagView: View {
                 .minimumScaleFactor(0.01)
                 .lineLimit(1)
         case .asset(let name):
-            Image(name, bundle: .main)
+            Image(name, bundle: .module)
                 .resizable()
                 .scaledToFill()
         }
