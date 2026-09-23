@@ -24,13 +24,13 @@ xcrun simctl io <udid> screenshot face.png
 python3 Tools/analyze.py face.png
 ```
 
-## Result, watchOS 26.5, Infograph circular sub-dials
+## Result, watchOS 26.5, Meridian circular sub-dials
 
 Full colour. SwiftUI shapes measured 0.90-0.96 mean saturation, the emoji
 0.72-0.73, both carrying all three flag hues (~45 deg yellow, ~135 deg green,
 ~210 deg blue). A flattened complication would show one hue.
 
-Only Infograph was tested. Other faces may use `accented`, so the real app
+Only Meridian was tested. Other faces may use `accented`, so the real app
 still has to branch on `widgetRenderingMode`.
 
 The plain asset and `.fullColor` variants never landed in a slot, so they are

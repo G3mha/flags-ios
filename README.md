@@ -18,10 +18,12 @@ drew. In `accented` and `vibrant` the system flattens your view into flatly
 coloured groups, and a flag's colours are gone. Which one you get depends on
 the watch face, and Apple's docs don't spell it out per face.
 
-So [`Spike/`](Spike) measured it. On watchOS 26.5, Infograph's circular
-sub-dials give third-party complications `fullColor`: the flag rendered at
-0.90–0.96 mean saturation carrying all three of its hues. A flattened
-complication would have shown one.
+So [`Spike/`](Spike) measured it. On watchOS 26.5, the **Meridian** face's
+circular sub-dials give third-party complications `fullColor`: the flag
+rendered at 0.90–0.96 mean saturation carrying all three of its hues. A
+flattened complication would have shown one.
+
+Only Meridian was measured. Infograph and the rest are untested.
 
 Other faces use `accented`. So `FlagView` branches on `widgetRenderingMode`
 and draws the country code when it can't draw the flag — a flattened flag is
@@ -112,13 +114,51 @@ swift test --package-path Packages/FlagKit
 xcodebuild build -project Flags.xcodeproj -scheme Flags -destination 'generic/platform=iOS'
 ```
 
+## Known bug: the complication renders nothing
+
+**The watch complication does not work yet.** Added to a face, it shows the
+redacted placeholder forever and never displays a flag. The app itself renders
+all 257 flags correctly, and everything builds and tests green — only a real
+complication on a real face exposes this.
+
+What the system log says on every timeline request:
+
+```
+FlagsWatchWidgets: (WidgetKit) [com.apple.chrono:timeline]
+Request ended for dev.enriccogemha.flags.flag:accessoryCircular
+- error: CHSErrorDomain Code=1101
+  "Returned view collection was either nil or empty."
+```
+
+Ruled out by experiment, not reasoning:
+
+- **Not the view code.** Replacing the whole widget body with
+  `ZStack { Color.red; Text(...) }` reproduces it.
+- **Not App Intents metadata.** Adding `AppIntentsPackage` put
+  `extract.packagedata` in the extension bundle; behaviour unchanged.
+- **Not a crash**, and not Always-On redaction — it persists on a woken screen.
+- **Not a stale configuration.** Removing and re-adding the complication after
+  the metadata fix changes nothing.
+
+Leads worth pursuing:
+
+- The spike worked using `StaticConfiguration`; this uses
+  `AppIntentConfiguration`. That is the remaining structural difference.
+  Swapping the widget to `StaticConfiguration` temporarily would isolate it,
+  at the cost of orphaning any placed complication.
+- Returning four entries with `.atEnd` instead of one with `.never` made the
+  1101 error stop appearing in the log, but produced no visible change. Not
+  committed, since it fixes nothing observable.
+
 ## Before shipping
 
 - The region list comes from `Locale`, so it shifts with the OS version. It's
   close to ISO 3166-1 but not identical — `XK` for Kosovo is a user-assigned
   code the standard doesn't define. A test asserts the count stays between
   200 and 400 so an OS change can't quietly empty or explode it.
-- App icons are placeholders.
+- App icons are placeholders. Confirmed in the log:
+  `IconServices: Failed to find icon resources for bundle identifier
+  dev.enriccogemha.flags.watchkitapp`.
 
 ## Licence
 
