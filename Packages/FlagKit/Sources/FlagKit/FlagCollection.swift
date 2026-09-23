@@ -16,7 +16,7 @@ public protocol FlagCollection: Sendable {
 /// mutable global and no chance of a widget extension seeing a different set
 /// than the app. If packs ever become downloadable this is the seam to change.
 public struct FlagRegistry: Sendable {
-    public static let shared = FlagRegistry(collections: [])
+    public static let shared = FlagRegistry(collections: [Countries.self])
 
     public let collections: [any FlagCollection.Type]
 
