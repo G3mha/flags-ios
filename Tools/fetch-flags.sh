@@ -18,7 +18,7 @@
 
 set -euo pipefail
 
-VERSION="${1:-7.2.3}"
+VERSION="${1:-7.5.0}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CATALOG="$ROOT/Packages/FlagKit/Sources/FlagKit/Resources/Flags.xcassets"
 WORK="$(mktemp -d)"
@@ -39,7 +39,11 @@ fi
 rm -rf "$CATALOG"
 mkdir -p "$CATALOG"
 printf '{"info":{"author":"xcode","version":1}}\n' > "$CATALOG/Contents.json"
-cp "$SRC/LICENSE" "$CATALOG/flag-icons-LICENSE.txt"
+
+# Beside the catalog, not inside it: asset catalogs compile to Assets.car and
+# drop anything they do not recognise, so a .txt in there never reaches the
+# built product. MIT wants the notice shipped with the artwork.
+cp "$SRC/LICENSE" "$(dirname "$CATALOG")/flag-icons-LICENSE.txt"
 
 count=0
 for svg in "$SRC"/flags/1x1/*.svg; do
@@ -49,7 +53,16 @@ for svg in "$SRC"/flags/1x1/*.svg; do
   [[ "$code" =~ ^[a-z]{2}$ ]] || continue
   set="$CATALOG/flag-$code.imageset"
   mkdir -p "$set"
-  cp "$svg" "$set/flag-$code.svg"
+
+  # These carry a 512 viewBox and no width/height, so Xcode rasterises at 512,
+  # 1024 and 1536. Across 257 flags that is 7.8MB of Assets.car, duplicated
+  # into every extension that links FlagKit. Capping the intrinsic size at 160
+  # brings it to 2.6MB and still covers the largest use: an iOS systemSmall
+  # widget at 3x needs ~474px, and 160 x 3 is 480. The watch never asks for
+  # more than ~110px.
+  sed 's|<svg |<svg width="160" height="160" |' "$svg" > "$set/flag-$code.svg"
+  # No preserves-vector-representation: it made no measurable size difference
+  # and we never draw these larger than the capped raster covers.
   cat > "$set/Contents.json" <<JSON
 {
   "images" : [
@@ -58,8 +71,7 @@ for svg in "$SRC"/flags/1x1/*.svg; do
       "idiom" : "universal"
     }
   ],
-  "info" : { "author" : "xcode", "version" : 1 },
-  "properties" : { "preserves-vector-representation" : true }
+  "info" : { "author" : "xcode", "version" : 1 }
 }
 JSON
   count=$((count + 1))
@@ -83,9 +95,4 @@ GEN="$ROOT/Packages/FlagKit/Sources/FlagKit/CountryAssets.swift"
 } > "$GEN"
 
 echo "Wrote $count flags to $CATALOG"
-echo
-echo "Remaining manual step: add the resource to Packages/FlagKit/Package.swift"
-echo
-echo '    .target(name: "FlagKit", resources: [.process("Resources")]),'
-echo
-echo "then have Countries use .asset when CountryAssets.available contains the code."
+echo "Run: swift test --package-path Packages/FlagKit"
