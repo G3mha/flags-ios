@@ -133,15 +133,27 @@ Swapping that one branch to emoji rendered the flag. So the view, the
 timeline and the configuration type were all fine - only the asset lookup
 was broken.
 
-`FlagView` now resolves through `UIImage(named:in:with:)` and falls back to
-the country code when lookup fails, so a complication can never be blank again.
+`FlagView` now resolves through `UIImage(named:)` against `Bundle.main`, and
+falls back to the country code when lookup fails so a complication can never
+be blank again.
 
-**Still unverified:** whether `UIImage` actually fixes the lookup in an
-extension. The simulator serves a stale widget extension binary even to a
-freshly added complication, surviving reinstalls and reboots, so the fix
-could not be observed there. Confirm on a device. If it turns out `UIImage`
-fails too, the next move is taking the catalogue out of the SPM resource
-bundle and into each target, so it resolves via `Bundle.main`.
+The catalogue itself moved out of the package: it lives in `Assets/` and is a
+member of all four targets, so it resolves the ordinary way every widget does
+rather than through an SPM resource bundle. Verified in the built products -
+no package bundle remains, and each of the four bundles carries the flags in
+its own `Assets.car`. Total app size is unchanged at 20MB.
+
+**Still unverified at runtime.** The simulator's widget caching blocked every
+attempt: it served stale extension binaries to freshly added complications
+through reinstalls and reboots, and after the move it would not surface the
+widget in the complication gallery at all despite the log showing its kind
+registered. Confirm on a device.
+
+## Layout note
+
+`Assets/Flags.xcassets` is deliberately outside the per-target synchronized
+folders, referenced by all four targets. Keep it that way — putting it back in
+a package resource bundle reintroduces the bug above.
 
 ## Before shipping
 
