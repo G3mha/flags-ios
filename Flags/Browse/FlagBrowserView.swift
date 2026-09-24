@@ -11,6 +11,8 @@ struct FlagBrowserView: View {
     @State private var showingGuide = false
     /// The flag at the top of the viewport.
     @State private var topFlag: FlagID?
+    /// How far the list has scrolled: 0 at the top, negative once it moves.
+    @State private var scrollOffset: CGFloat = 0
 
     private let columns = [GridItem(.adaptive(minimum: 96, maximum: 140), spacing: 16)]
 
@@ -66,7 +68,19 @@ struct FlagBrowserView: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
                 .safeAreaPadding(.bottom, 56)
+                .background {
+                    GeometryReader { geometry in
+                        Color.clear.onChange(
+                            of: geometry.frame(in: .named(Self.scrollSpace)).minY,
+                            initial: true
+                        ) { _, y in scrollOffset = y }
+                    }
+                }
             }
+            // Must be .coordinateSpace(.named:), not the deprecated
+            // .coordinateSpace(name:) — the latter does not pair with
+            // .named() and every frame reads back as zero.
+            .coordinateSpace(.named(Self.scrollSpace))
             .scrollPosition(id: $topFlag, anchor: .top)
             .navigationTitle(title)
             // Flags are edge-to-edge colour, so a transparent bar leaves the
@@ -96,29 +110,31 @@ struct FlagBrowserView: View {
         }
     }
 
-    /// The first flag in the list, which is what sits at the top before any
-    /// scrolling happens.
-    private var firstFlag: FlagID? {
-        favouriteFlags.first?.id ?? sections.first?.flags.first?.id
-    }
+    private static let scrollSpace = "flagGrid"
 
-    /// The app's name until you scroll, the continent after.
+    /// Roughly what the large title occupies before collapsing into the bar.
+    private static let largeTitleHeight: CGFloat = 52
+
+    /// The app's name while the large title is on screen, the continent once it
+    /// has collapsed into the bar.
     ///
-    /// Both halves matter. Naming the continent before any scrolling would open
-    /// the app announcing "Africa" directly above a section header that also
-    /// reads "Africa" — the app would never say its own name. Keeping "Flags"
-    /// forever would waste the inline bar, which is the one place worth saying
-    /// where you are once the headers have scrolled past.
+    /// Both halves matter. Naming the continent while the large title shows
+    /// would open the app announcing "Africa" directly above a section header
+    /// that also reads "Africa", and it would never say its own name. Keeping
+    /// "Flags" forever would waste the inline bar, which is the one place worth
+    /// saying where you are once the headers have scrolled past.
     ///
-    /// Told apart by the top flag rather than a scroll offset: while the list
-    /// has not moved, the flag at the top is the first one in it.
+    /// Keyed on the scroll offset rather than on which flag is at the top. The
+    /// latter looks equivalent and is not: after scrolling away and back, the
+    /// top flag does not reliably return to the first one, so the title stays
+    /// stuck on a continent at the top of the list.
     ///
     /// Searching keeps the app's name throughout, since the results are one
     /// flat run with no continent to report.
     private var title: String {
         guard query.isEmpty,
+              scrollOffset < -Self.largeTitleHeight,
               let topFlag,
-              topFlag != firstFlag,
               let group = FlagRegistry.shared.flag(for: topFlag)?.group
         else { return "Flags" }
         return group
