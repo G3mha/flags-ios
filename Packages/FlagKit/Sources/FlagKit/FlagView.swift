@@ -56,21 +56,20 @@ public struct FlagView: View {
                 .minimumScaleFactor(0.01)
                 .lineLimit(1)
         case .asset(let name):
-            // Resolved through UIImage rather than Image(_:bundle:).
+            // The catalogue lives in each target's own bundle rather than in a
+            // package resource bundle, so this resolves through Bundle.main.
             //
-            // In a widget extension SwiftUI's Image(_:bundle:) renders nothing
-            // for these assets even though the catalogue is present and
-            // Bundle.module resolves - verified with assetutil, both the app's
-            // and the extension's Assets.car carry all 514 entries. The same
-            // call works in the app.
+            // It used to be an SPM resource, and Image(_:bundle: .module)
+            // rendered nothing inside a widget extension - the catalogue was
+            // present and Bundle.module resolved, but nothing drew. Moving it
+            // into the targets removes that whole failure mode.
             //
-            // Falling back to the flattened form matters: a complication that
-            // cannot load its artwork should still read as a country rather
-            // than render nothing at all, which is what shipped before.
-            // UIKit is absent on the macOS host the package's tests run on,
-            // so that build keeps the plain SwiftUI path.
+            // The fallback stays regardless: a complication that cannot load
+            // its artwork should read as a country rather than render nothing.
+            // UIKit is absent on the macOS host the package's tests run on, so
+            // that build keeps the plain SwiftUI path.
             #if canImport(UIKit)
-            if let image = UIImage(named: name, in: .module, with: nil) {
+            if let image = UIImage(named: name) {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
@@ -78,7 +77,7 @@ public struct FlagView: View {
                 flattened
             }
             #else
-            Image(name, bundle: .module)
+            Image(name)
                 .resizable()
                 .scaledToFill()
             #endif

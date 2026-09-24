@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BB00000000000000000000A0 /* Flags.xcassets in Resources (Flags) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1; };
+		BB00000000000000000000B0 /* flag-icons-LICENSE.txt in Resources (Flags) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2; };
+		BB00000000000000000000A1 /* Flags.xcassets in Resources (FlagsWidgets) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1; };
+		BB00000000000000000000B1 /* flag-icons-LICENSE.txt in Resources (FlagsWidgets) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2; };
+		BB00000000000000000000A2 /* Flags.xcassets in Resources (FlagsWatch) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1; };
+		BB00000000000000000000B2 /* flag-icons-LICENSE.txt in Resources (FlagsWatch) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2; };
+		BB00000000000000000000A3 /* Flags.xcassets in Resources (FlagsWatchWidgets) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1; };
+		BB00000000000000000000B3 /* flag-icons-LICENSE.txt in Resources (FlagsWatchWidgets) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2; };
 		BB0000000000000000000013 /* FlagKit in Frameworks */ = {isa = PBXBuildFile; productRef = BB0000000000000000000012 /* FlagKit */; };
 		BB000000000000000000003C /* FlagsWidgets.appex in Embed */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000015; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BB000000000000000000003D /* FlagsWatch.app in Embed */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000021; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -77,6 +85,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BB00000000000000000000F1 /* Flags.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Flags.xcassets; path = Assets/Flags.xcassets; sourceTree = "<group>"; };
+		BB00000000000000000000F2 /* flag-icons-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = "flag-icons-LICENSE.txt"; path = "Assets/flag-icons-LICENSE.txt"; sourceTree = "<group>"; };
 		BB000000000000000000000A /* Flags.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flags.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB0000000000000000000015 /* FlagsWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FlagsWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB0000000000000000000021 /* FlagsWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlagsWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -157,6 +167,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BB00000000000000000000F0 /* Assets */ = {
+			isa = PBXGroup;
+			children = (
+				BB00000000000000000000F1 /* Flags.xcassets */,
+				BB00000000000000000000F2 /* flag-icons-LICENSE.txt */,
+			);
+			name = Assets;
+			sourceTree = "<group>";
+		};
 		BB0000000000000000000003 = {
 			isa = PBXGroup;
 			children = (
@@ -164,6 +183,7 @@
 				BB000000000000000000001C /* FlagsWidgets */,
 				BB0000000000000000000028 /* FlagsWatch */,
 				BB0000000000000000000033 /* FlagsWatchWidgets */,
+				BB00000000000000000000F0 /* Assets */,
 				BB0000000000000000000004 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -336,6 +356,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB00000000000000000000A0 /* Flags.xcassets */,
+				BB00000000000000000000B0 /* flag-icons-LICENSE.txt */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,6 +365,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB00000000000000000000A1 /* Flags.xcassets */,
+				BB00000000000000000000B1 /* flag-icons-LICENSE.txt */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -350,6 +374,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB00000000000000000000A2 /* Flags.xcassets */,
+				BB00000000000000000000B2 /* flag-icons-LICENSE.txt */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -357,6 +383,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB00000000000000000000A3 /* Flags.xcassets */,
+				BB00000000000000000000B3 /* flag-icons-LICENSE.txt */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
