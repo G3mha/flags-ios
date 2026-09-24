@@ -50,6 +50,10 @@ public struct Flag: Identifiable, Hashable, Sendable {
     /// False for a flag that still resolves and draws, but is not offered in
     /// a picker. See `Countries.restrictions` for the only current use.
     public let isListed: Bool
+    /// A heading to file this flag under when browsing — the continent for a
+    /// country, a league for a club. Nil when a collection has no useful
+    /// grouping, in which case the browser shows one flat run.
+    public let group: String?
 
     public init(
         id: FlagID,
@@ -57,13 +61,15 @@ public struct Flag: Identifiable, Hashable, Sendable {
         searchTerms: [String] = [],
         artwork: FlagArtwork,
         abbreviation: String,
-        isListed: Bool = true
+        isListed: Bool = true,
+        group: String? = nil
     ) {
         self.id = id
         self.name = name
         self.artwork = artwork
         self.abbreviation = abbreviation
         self.isListed = isListed
+        self.group = group
         self.searchTerms = (searchTerms + [name, id.code]).map { $0.lowercased() }
     }
 
