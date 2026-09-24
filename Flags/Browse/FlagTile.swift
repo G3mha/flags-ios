@@ -12,7 +12,7 @@ struct FlagTile: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            FlagArtwork(flag: flag, cornerRadius: 14)
+            FlagSquare(flag: flag, cornerRadius: 14)
                 .overlay(alignment: .topTrailing) {
                     if isFavourite {
                         Image(systemName: "star.fill")
@@ -33,20 +33,5 @@ struct FlagTile: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(isFavourite ? "\(flag.name), favourite" : flag.name)
-    }
-}
-
-/// The artwork on its own, squared off and outlined.
-struct FlagArtwork: View {
-    let flag: Flag
-    var cornerRadius: CGFloat = 14
-
-    var body: some View {
-        FlagView(flag: flag, shape: .roundedRect(cornerRadius: cornerRadius))
-            .aspectRatio(1, contentMode: .fit)
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(.separator, lineWidth: 0.5)
-            }
     }
 }
