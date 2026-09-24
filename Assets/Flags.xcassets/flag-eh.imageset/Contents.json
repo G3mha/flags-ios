@@ -1,12 +1,6 @@
 {
-  "images": [
-    {
-      "filename": "flag-eh.svg",
-      "idiom": "universal"
-    }
+  "images" : [
+    { "filename" : "flag-eh.png", "idiom" : "universal" }
   ],
-  "info": {
-    "author": "xcode",
-    "version": 1
-  }
+  "info" : { "author" : "xcode", "version" : 1 }
 }
