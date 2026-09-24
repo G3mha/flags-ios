@@ -7,41 +7,41 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BB00000000000000000000A0 /* Flags.xcassets in Resources (Flags) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1; };
-		BB00000000000000000000B0 /* flag-icons-LICENSE.txt in Resources (Flags) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2; };
-		BB00000000000000000000A1 /* Flags.xcassets in Resources (FlagsWidgets) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1; };
-		BB00000000000000000000B1 /* flag-icons-LICENSE.txt in Resources (FlagsWidgets) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2; };
-		BB00000000000000000000A2 /* Flags.xcassets in Resources (FlagsWatch) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1; };
-		BB00000000000000000000B2 /* flag-icons-LICENSE.txt in Resources (FlagsWatch) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2; };
-		BB00000000000000000000A3 /* Flags.xcassets in Resources (FlagsWatchWidgets) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1; };
-		BB00000000000000000000B3 /* flag-icons-LICENSE.txt in Resources (FlagsWatchWidgets) */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2; };
 		BB0000000000000000000013 /* FlagKit in Frameworks */ = {isa = PBXBuildFile; productRef = BB0000000000000000000012 /* FlagKit */; };
-		BB000000000000000000003C /* FlagsWidgets.appex in Embed */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000015; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		BB000000000000000000003D /* FlagsWatch.app in Embed */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000021; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BB000000000000000000001E /* FlagKit in Frameworks */ = {isa = PBXBuildFile; productRef = BB000000000000000000001D /* FlagKit */; };
 		BB000000000000000000002A /* FlagKit in Frameworks */ = {isa = PBXBuildFile; productRef = BB0000000000000000000029 /* FlagKit */; };
-		BB0000000000000000000041 /* FlagsWatchWidgets.appex in Embed */ = {isa = PBXBuildFile; fileRef = BB000000000000000000002C; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BB0000000000000000000035 /* FlagKit in Frameworks */ = {isa = PBXBuildFile; productRef = BB0000000000000000000034 /* FlagKit */; };
+		BB000000000000000000003C /* FlagsWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000015 /* FlagsWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BB000000000000000000003D /* FlagsWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000021 /* FlagsWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BB0000000000000000000041 /* FlagsWatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BB000000000000000000002C /* FlagsWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BB00000000000000000000A0 /* Flags.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1 /* Flags.xcassets */; };
+		BB00000000000000000000A1 /* Flags.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1 /* Flags.xcassets */; };
+		BB00000000000000000000A2 /* Flags.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1 /* Flags.xcassets */; };
+		BB00000000000000000000A3 /* Flags.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F1 /* Flags.xcassets */; };
+		BB00000000000000000000B0 /* flag-icons-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2 /* flag-icons-LICENSE.txt */; };
+		BB00000000000000000000B1 /* flag-icons-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2 /* flag-icons-LICENSE.txt */; };
+		BB00000000000000000000B2 /* flag-icons-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2 /* flag-icons-LICENSE.txt */; };
+		BB00000000000000000000B3 /* flag-icons-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2 /* flag-icons-LICENSE.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		BB0000000000000000000039 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = BB0000000000000000000002;
+			containerPortal = BB0000000000000000000002 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = BB0000000000000000000014;
 			remoteInfo = FlagsWidgets;
 		};
 		BB000000000000000000003B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = BB0000000000000000000002;
+			containerPortal = BB0000000000000000000002 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = BB0000000000000000000020;
 			remoteInfo = FlagsWatch;
 		};
 		BB0000000000000000000040 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = BB0000000000000000000002;
+			containerPortal = BB0000000000000000000002 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = BB000000000000000000002B;
 			remoteInfo = FlagsWatchWidgets;
@@ -49,26 +49,26 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		BB0000000000000000000037 /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				BB000000000000000000003C /* FlagsWidgets */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		BB0000000000000000000008 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
 			dstSubfolderSpec = 16;
 			files = (
-				BB000000000000000000003D /* FlagsWatch */,
+				BB000000000000000000003D /* FlagsWatch.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB0000000000000000000037 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				BB000000000000000000003C /* FlagsWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		BB000000000000000000003E /* Embed Foundation Extensions */ = {
@@ -77,7 +77,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				BB0000000000000000000041 /* FlagsWatchWidgets */,
+				BB0000000000000000000041 /* FlagsWatchWidgets.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -85,46 +85,54 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		BB00000000000000000000F1 /* Flags.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Flags.xcassets; path = Assets/Flags.xcassets; sourceTree = "<group>"; };
-		BB00000000000000000000F2 /* flag-icons-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = "flag-icons-LICENSE.txt"; path = "Assets/flag-icons-LICENSE.txt"; sourceTree = "<group>"; };
 		BB000000000000000000000A /* Flags.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flags.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB0000000000000000000015 /* FlagsWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FlagsWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB0000000000000000000021 /* FlagsWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlagsWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB000000000000000000002C /* FlagsWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FlagsWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB00000000000000000000F1 /* Flags.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Flags.xcassets; path = Assets/Flags.xcassets; sourceTree = "<group>"; };
+		BB00000000000000000000F2 /* flag-icons-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = "flag-icons-LICENSE.txt"; path = "Assets/flag-icons-LICENSE.txt"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		BB000000000000000000001F = {
+		BB000000000000000000001F /* Exceptions for "FlagsWidgets" folder in "FlagsWidgets" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = BB0000000000000000000014;
+			target = BB0000000000000000000014 /* FlagsWidgets */;
 		};
-		BB0000000000000000000036 = {
+		BB0000000000000000000036 /* Exceptions for "FlagsWatchWidgets" folder in "FlagsWatchWidgets" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = BB000000000000000000002B;
+			target = BB000000000000000000002B /* FlagsWatchWidgets */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		BB0000000000000000000011 /* Flags */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Flags; sourceTree = "<group>"; };
+		BB0000000000000000000011 /* Flags */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Flags;
+			sourceTree = "<group>";
+		};
 		BB000000000000000000001C /* FlagsWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				BB000000000000000000001F,
+				BB000000000000000000001F /* Exceptions for "FlagsWidgets" folder in "FlagsWidgets" target */,
 			);
 			path = FlagsWidgets;
 			sourceTree = "<group>";
 		};
-		BB0000000000000000000028 /* FlagsWatch */ = {isa = PBXFileSystemSynchronizedRootGroup; path = FlagsWatch; sourceTree = "<group>"; };
+		BB0000000000000000000028 /* FlagsWatch */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FlagsWatch;
+			sourceTree = "<group>";
+		};
 		BB0000000000000000000033 /* FlagsWatchWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				BB0000000000000000000036,
+				BB0000000000000000000036 /* Exceptions for "FlagsWatchWidgets" folder in "FlagsWatchWidgets" target */,
 			);
 			path = FlagsWatchWidgets;
 			sourceTree = "<group>";
@@ -136,7 +144,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB0000000000000000000013 /* FlagKit */,
+				BB0000000000000000000013 /* FlagKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -144,7 +152,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB000000000000000000001E /* FlagKit */,
+				BB000000000000000000001E /* FlagKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -152,7 +160,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB000000000000000000002A /* FlagKit */,
+				BB000000000000000000002A /* FlagKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -160,22 +168,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB0000000000000000000035 /* FlagKit */,
+				BB0000000000000000000035 /* FlagKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		BB00000000000000000000F0 /* Assets */ = {
-			isa = PBXGroup;
-			children = (
-				BB00000000000000000000F1 /* Flags.xcassets */,
-				BB00000000000000000000F2 /* flag-icons-LICENSE.txt */,
-			);
-			name = Assets;
-			sourceTree = "<group>";
-		};
 		BB0000000000000000000003 = {
 			isa = PBXGroup;
 			children = (
@@ -199,107 +198,114 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		BB00000000000000000000F0 /* Assets */ = {
+			isa = PBXGroup;
+			children = (
+				BB00000000000000000000F1 /* Flags.xcassets */,
+				BB00000000000000000000F2 /* flag-icons-LICENSE.txt */,
+			);
+			name = Assets;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
 		BB0000000000000000000009 /* Flags */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BB000000000000000000000E;
+			buildConfigurationList = BB000000000000000000000E /* Build configuration list for PBXNativeTarget "Flags" */;
 			buildPhases = (
-				BB000000000000000000000B,
-				BB000000000000000000000D,
-				BB000000000000000000000C,
-				BB0000000000000000000037,
-				BB0000000000000000000008,
+				BB000000000000000000000B /* Sources */,
+				BB000000000000000000000D /* Frameworks */,
+				BB000000000000000000000C /* Resources */,
+				BB0000000000000000000037 /* Embed Foundation Extensions */,
+				BB0000000000000000000008 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				BB0000000000000000000038 /* FlagsWidgets */,
-				BB000000000000000000003A /* FlagsWatch */,
+				BB0000000000000000000038 /* PBXTargetDependency */,
+				BB000000000000000000003A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				BB0000000000000000000011,
+				BB0000000000000000000011 /* Flags */,
 			);
 			name = Flags;
 			packageProductDependencies = (
 				BB0000000000000000000012 /* FlagKit */,
 			);
 			productName = Flags;
-			productReference = BB000000000000000000000A;
+			productReference = BB000000000000000000000A /* Flags.app */;
 			productType = "com.apple.product-type.application";
 		};
 		BB0000000000000000000014 /* FlagsWidgets */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BB0000000000000000000019;
+			buildConfigurationList = BB0000000000000000000019 /* Build configuration list for PBXNativeTarget "FlagsWidgets" */;
 			buildPhases = (
-				BB0000000000000000000016,
-				BB0000000000000000000018,
-				BB0000000000000000000017,
+				BB0000000000000000000016 /* Sources */,
+				BB0000000000000000000018 /* Frameworks */,
+				BB0000000000000000000017 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-
 			);
 			fileSystemSynchronizedGroups = (
-				BB000000000000000000001C,
+				BB000000000000000000001C /* FlagsWidgets */,
 			);
 			name = FlagsWidgets;
 			packageProductDependencies = (
 				BB000000000000000000001D /* FlagKit */,
 			);
 			productName = FlagsWidgets;
-			productReference = BB0000000000000000000015;
+			productReference = BB0000000000000000000015 /* FlagsWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 		BB0000000000000000000020 /* FlagsWatch */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BB0000000000000000000025;
+			buildConfigurationList = BB0000000000000000000025 /* Build configuration list for PBXNativeTarget "FlagsWatch" */;
 			buildPhases = (
-				BB0000000000000000000022,
-				BB0000000000000000000024,
-				BB0000000000000000000023,
-				BB000000000000000000003E,
+				BB0000000000000000000022 /* Sources */,
+				BB0000000000000000000024 /* Frameworks */,
+				BB0000000000000000000023 /* Resources */,
+				BB000000000000000000003E /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				BB000000000000000000003F /* FlagsWatchWidgets */,
+				BB000000000000000000003F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				BB0000000000000000000028,
+				BB0000000000000000000028 /* FlagsWatch */,
 			);
 			name = FlagsWatch;
 			packageProductDependencies = (
 				BB0000000000000000000029 /* FlagKit */,
 			);
 			productName = FlagsWatch;
-			productReference = BB0000000000000000000021;
+			productReference = BB0000000000000000000021 /* FlagsWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
 		BB000000000000000000002B /* FlagsWatchWidgets */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BB0000000000000000000030;
+			buildConfigurationList = BB0000000000000000000030 /* Build configuration list for PBXNativeTarget "FlagsWatchWidgets" */;
 			buildPhases = (
-				BB000000000000000000002D,
-				BB000000000000000000002F,
-				BB000000000000000000002E,
+				BB000000000000000000002D /* Sources */,
+				BB000000000000000000002F /* Frameworks */,
+				BB000000000000000000002E /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-
 			);
 			fileSystemSynchronizedGroups = (
-				BB0000000000000000000033,
+				BB0000000000000000000033 /* FlagsWatchWidgets */,
 			);
 			name = FlagsWatchWidgets;
 			packageProductDependencies = (
 				BB0000000000000000000034 /* FlagKit */,
 			);
 			productName = FlagsWatchWidgets;
-			productReference = BB000000000000000000002C;
+			productReference = BB000000000000000000002C /* FlagsWatchWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -326,7 +332,7 @@
 					};
 				};
 			};
-			buildConfigurationList = BB0000000000000000000005;
+			buildConfigurationList = BB0000000000000000000005 /* Build configuration list for PBXProject "Flags" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -352,67 +358,67 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		BB000000000000000000000C = {
+		BB000000000000000000000C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB00000000000000000000A0 /* Flags.xcassets */,
-				BB00000000000000000000B0 /* flag-icons-LICENSE.txt */,
+				BB00000000000000000000A0 /* Flags.xcassets in Resources */,
+				BB00000000000000000000B0 /* flag-icons-LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BB0000000000000000000017 = {
+		BB0000000000000000000017 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB00000000000000000000A1 /* Flags.xcassets */,
-				BB00000000000000000000B1 /* flag-icons-LICENSE.txt */,
+				BB00000000000000000000A1 /* Flags.xcassets in Resources */,
+				BB00000000000000000000B1 /* flag-icons-LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BB0000000000000000000023 = {
+		BB0000000000000000000023 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB00000000000000000000A2 /* Flags.xcassets */,
-				BB00000000000000000000B2 /* flag-icons-LICENSE.txt */,
+				BB00000000000000000000A2 /* Flags.xcassets in Resources */,
+				BB00000000000000000000B2 /* flag-icons-LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BB000000000000000000002E = {
+		BB000000000000000000002E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB00000000000000000000A3 /* Flags.xcassets */,
-				BB00000000000000000000B3 /* flag-icons-LICENSE.txt */,
+				BB00000000000000000000A3 /* Flags.xcassets in Resources */,
+				BB00000000000000000000B3 /* flag-icons-LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		BB000000000000000000000B = {
+		BB000000000000000000000B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BB0000000000000000000016 = {
+		BB0000000000000000000016 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BB0000000000000000000022 = {
+		BB0000000000000000000022 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BB000000000000000000002D = {
+		BB000000000000000000002D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -425,17 +431,17 @@
 		BB0000000000000000000038 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = BB0000000000000000000014 /* FlagsWidgets */;
-			targetProxy = BB0000000000000000000039;
+			targetProxy = BB0000000000000000000039 /* PBXContainerItemProxy */;
 		};
 		BB000000000000000000003A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = BB0000000000000000000020 /* FlagsWatch */;
-			targetProxy = BB000000000000000000003B;
+			targetProxy = BB000000000000000000003B /* PBXContainerItemProxy */;
 		};
 		BB000000000000000000003F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = BB000000000000000000002B /* FlagsWatchWidgets */;
-			targetProxy = BB0000000000000000000040;
+			targetProxy = BB0000000000000000000040 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -477,8 +483,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
@@ -498,8 +506,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
@@ -517,6 +527,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
@@ -536,6 +547,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
@@ -557,6 +569,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
 				INFOPLIST_KEY_WKApplication = YES;
@@ -579,6 +592,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
 				INFOPLIST_KEY_WKApplication = YES;
@@ -599,6 +613,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
@@ -618,6 +633,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
@@ -636,7 +652,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BB0000000000000000000005 = {
+		BB0000000000000000000005 /* Build configuration list for PBXProject "Flags" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB0000000000000000000006 /* Debug */,
@@ -645,7 +661,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BB000000000000000000000E = {
+		BB000000000000000000000E /* Build configuration list for PBXNativeTarget "Flags" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB000000000000000000000F /* Debug */,
@@ -654,7 +670,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BB0000000000000000000019 = {
+		BB0000000000000000000019 /* Build configuration list for PBXNativeTarget "FlagsWidgets" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB000000000000000000001A /* Debug */,
@@ -663,7 +679,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BB0000000000000000000025 = {
+		BB0000000000000000000025 /* Build configuration list for PBXNativeTarget "FlagsWatch" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB0000000000000000000026 /* Debug */,
@@ -672,7 +688,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BB0000000000000000000030 = {
+		BB0000000000000000000030 /* Build configuration list for PBXNativeTarget "FlagsWatchWidgets" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB0000000000000000000031 /* Debug */,
@@ -708,7 +724,6 @@
 			productName = FlagKit;
 		};
 /* End XCSwiftPackageProductDependency section */
-
 	};
 	rootObject = BB0000000000000000000002 /* Project object */;
 }
