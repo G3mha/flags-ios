@@ -1,12 +1,6 @@
 {
-  "images": [
-    {
-      "filename": "flag-hk.svg",
-      "idiom": "universal"
-    }
+  "images" : [
+    { "filename" : "flag-hk.png", "idiom" : "universal" }
   ],
-  "info": {
-    "author": "xcode",
-    "version": 1
-  }
+  "info" : { "author" : "xcode", "version" : 1 }
 }

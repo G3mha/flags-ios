@@ -59,15 +59,7 @@ for svg in "$SRC"/flags/1x1/*.svg; do
   set="$CATALOG/flag-$code.imageset"
   mkdir -p "$set"
 
-  # These carry a 512 viewBox and no width/height, so Xcode rasterises at 512,
-  # 1024 and 1536. Across 257 flags that is 7.8MB of Assets.car, duplicated
-  # into every extension that links FlagKit. Capping the intrinsic size at 160
-  # brings it to 2.6MB and still covers the largest use: an iOS systemSmall
-  # widget at 3x needs ~474px, and 160 x 3 is 480. The watch never asks for
-  # more than ~110px.
-  sed 's|<svg |<svg width="160" height="160" |' "$svg" > "$set/flag-$code.svg"
-  # No preserves-vector-representation: it made no measurable size difference
-  # and we never draw these larger than the capped raster covers.
+  cp "$svg" "$set/flag-$code.svg"
   cat > "$set/Contents.json" <<JSON
 {
   "images" : [
@@ -99,5 +91,14 @@ GEN="$ROOT/Packages/FlagKit/Sources/FlagKit/CountryAssets.swift"
   echo "}"
 } > "$GEN"
 
-echo "Wrote $count flags to $CATALOG"
+echo "Wrote $count SVGs to $CATALOG"
+
+# Xcode's asset catalogues accept SVG but implement only a subset of it: 71 of
+# these flags use clipPath and 60 use <use>, and those compile without
+# complaint and render wrong - Burundi came out a black square, Cameroon
+# yellow smears. WebKit is a complete SVG engine, so render through it and
+# ship PNGs instead.
+echo "Rasterising through WebKit"
+swift "$ROOT/Tools/rasterise.swift" "$CATALOG" 480
+
 echo "Run: swift test --package-path Packages/FlagKit"

@@ -1,12 +1,6 @@
 {
-  "images": [
-    {
-      "filename": "flag-dk.svg",
-      "idiom": "universal"
-    }
+  "images" : [
+    { "filename" : "flag-dk.png", "idiom" : "universal" }
   ],
-  "info": {
-    "author": "xcode",
-    "version": 1
-  }
+  "info" : { "author" : "xcode", "version" : 1 }
 }
