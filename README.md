@@ -114,41 +114,34 @@ swift test --package-path Packages/FlagKit
 xcodebuild build -project Flags.xcodeproj -scheme Flags -destination 'generic/platform=iOS'
 ```
 
-## Known bug: the complication renders nothing
+## Complication artwork: what's verified
 
-**The watch complication does not work yet.** Added to a face, it shows the
-redacted placeholder forever and never displays a flag. The app itself renders
-all 257 flags correctly, and everything builds and tests green — only a real
-complication on a real face exposes this.
+**Full colour works.** Brazil rendered in a real complication on a real
+Meridian sub-dial, all three hues present. That is the premise of the app,
+confirmed end to end rather than inferred.
 
-What the system log says on every timeline request:
+**The asset path had a bug**, found the same way. SwiftUI's
+`Image(_:bundle:)` renders nothing for these assets inside a widget
+extension, so the complication was blank. The catalogue is not the problem:
+`assetutil` shows the app's and the extension's `Assets.car` both carrying all
+514 entries, `Bundle.module` resolves, and the identical call works in the app.
 
-```
-FlagsWatchWidgets: (WidgetKit) [com.apple.chrono:timeline]
-Request ended for dev.enriccogemha.flags.flag:accessoryCircular
-- error: CHSErrorDomain Code=1101
-  "Returned view collection was either nil or empty."
-```
+It was isolated by putting a colour behind the image. Both a
+`StaticConfiguration` and an `AppIntentConfiguration` complication showed the
+colour at 0.92-0.96 saturation, unredacted, with nothing drawn over it.
+Swapping that one branch to emoji rendered the flag. So the view, the
+timeline and the configuration type were all fine - only the asset lookup
+was broken.
 
-Ruled out by experiment, not reasoning:
+`FlagView` now resolves through `UIImage(named:in:with:)` and falls back to
+the country code when lookup fails, so a complication can never be blank again.
 
-- **Not the view code.** Replacing the whole widget body with
-  `ZStack { Color.red; Text(...) }` reproduces it.
-- **Not App Intents metadata.** Adding `AppIntentsPackage` put
-  `extract.packagedata` in the extension bundle; behaviour unchanged.
-- **Not a crash**, and not Always-On redaction — it persists on a woken screen.
-- **Not a stale configuration.** Removing and re-adding the complication after
-  the metadata fix changes nothing.
-
-Leads worth pursuing:
-
-- The spike worked using `StaticConfiguration`; this uses
-  `AppIntentConfiguration`. That is the remaining structural difference.
-  Swapping the widget to `StaticConfiguration` temporarily would isolate it,
-  at the cost of orphaning any placed complication.
-- Returning four entries with `.atEnd` instead of one with `.never` made the
-  1101 error stop appearing in the log, but produced no visible change. Not
-  committed, since it fixes nothing observable.
+**Still unverified:** whether `UIImage` actually fixes the lookup in an
+extension. The simulator serves a stale widget extension binary even to a
+freshly added complication, surviving reinstalls and reboots, so the fix
+could not be observed there. Confirm on a device. If it turns out `UIImage`
+fails too, the next move is taking the catalogue out of the SPM resource
+bundle and into each target, so it resolves via `Bundle.main`.
 
 ## Before shipping
 
