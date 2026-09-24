@@ -9,6 +9,8 @@ struct FlagBrowserView: View {
     @Environment(Favourites.self) private var favourites
     @State private var query = ""
     @State private var showingGuide = false
+    /// The flag at the top of the viewport, which is what the title reports.
+    @State private var topFlag: FlagID?
 
     private let columns = [GridItem(.adaptive(minimum: 96, maximum: 140), spacing: 16)]
 
@@ -32,7 +34,12 @@ struct FlagBrowserView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 20, pinnedViews: .sectionHeaders) {
+                // Headers are deliberately not pinned. A pinned header has to
+                // paint its own background, and an opaque one under the
+                // translucent navigation bar stamps a hard strip that nothing
+                // else on screen matches. Letting them scroll away costs
+                // nothing now that the title says which continent you are in.
+                LazyVGrid(columns: columns, spacing: 20) {
                     if !favouriteFlags.isEmpty {
                         Section {
                             ForEach(favouriteFlags) { flag in
@@ -55,11 +62,17 @@ struct FlagBrowserView: View {
                         }
                     }
                 }
+                .scrollTargetLayout()
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
                 .safeAreaPadding(.bottom, 56)
             }
-            .navigationTitle("Flags")
+            .scrollPosition(id: $topFlag, anchor: .top)
+            .navigationTitle(title)
+            // Flags are edge-to-edge colour, so a transparent bar leaves the
+            // title sitting on top of one. The material is what makes it
+            // legible over anything that scrolls underneath.
+            .toolbarBackground(.visible, for: .navigationBar)
             .searchable(text: $query, prompt: "Country or code")
             .autocorrectionDisabled()
             .overlay {
@@ -81,6 +94,19 @@ struct FlagBrowserView: View {
                 FlagDetailView(flag: flag)
             }
         }
+    }
+
+    /// "Flags" at rest, the current continent once you are inside one.
+    ///
+    /// Searching keeps the app's name: the results are one flat run with no
+    /// continent to report, and a title that flickered between them while you
+    /// typed would be noise.
+    private var title: String {
+        guard query.isEmpty,
+              let topFlag,
+              let group = FlagRegistry.shared.flag(for: topFlag)?.group
+        else { return "Flags" }
+        return group
     }
 
     private func tile(for flag: Flag) -> some View {
@@ -105,7 +131,6 @@ private struct SectionHeader: View {
         }
         .foregroundStyle(.secondary)
         .padding(.vertical, 8)
-        .background(.background)
     }
 }
 
