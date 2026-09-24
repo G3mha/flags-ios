@@ -11,7 +11,7 @@ struct FlagDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                FlagArtwork(flag: flag, cornerRadius: 28)
+                FlagSquare(flag: flag, cornerRadius: 28)
                     .frame(maxWidth: 260)
                     .shadow(color: .black.opacity(0.18), radius: 18, y: 8)
                     .padding(.top, 8)
