@@ -9,7 +9,7 @@ struct FlagBrowserView: View {
     @Environment(Favourites.self) private var favourites
     @State private var query = ""
     @State private var showingGuide = false
-    /// The flag at the top of the viewport, which is what the title reports.
+    /// The flag at the top of the viewport.
     @State private var topFlag: FlagID?
 
     private let columns = [GridItem(.adaptive(minimum: 96, maximum: 140), spacing: 16)]
@@ -96,14 +96,29 @@ struct FlagBrowserView: View {
         }
     }
 
-    /// "Flags" at rest, the current continent once you are inside one.
+    /// The first flag in the list, which is what sits at the top before any
+    /// scrolling happens.
+    private var firstFlag: FlagID? {
+        favouriteFlags.first?.id ?? sections.first?.flags.first?.id
+    }
+
+    /// The app's name until you scroll, the continent after.
     ///
-    /// Searching keeps the app's name: the results are one flat run with no
-    /// continent to report, and a title that flickered between them while you
-    /// typed would be noise.
+    /// Both halves matter. Naming the continent before any scrolling would open
+    /// the app announcing "Africa" directly above a section header that also
+    /// reads "Africa" — the app would never say its own name. Keeping "Flags"
+    /// forever would waste the inline bar, which is the one place worth saying
+    /// where you are once the headers have scrolled past.
+    ///
+    /// Told apart by the top flag rather than a scroll offset: while the list
+    /// has not moved, the flag at the top is the first one in it.
+    ///
+    /// Searching keeps the app's name throughout, since the results are one
+    /// flat run with no continent to report.
     private var title: String {
         guard query.isEmpty,
               let topFlag,
+              topFlag != firstFlag,
               let group = FlagRegistry.shared.flag(for: topFlag)?.group
         else { return "Flags" }
         return group
