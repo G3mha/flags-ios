@@ -88,24 +88,32 @@ That's a licensing problem for those packs, not a coding one.
 
 ## Artwork
 
-257 country flags from [flag-icons](https://github.com/lipis/flag-icons) (MIT),
-bundled as SVG. Anything that set doesn't cover falls back to emoji derived
-from the region code, so every country has a flag either way.
+257 country flags from [flag-icons](https://github.com/lipis/flag-icons) (MIT).
+Four regions the set doesn't cover — Sark, Ceuta & Melilla, Tristan da Cunha,
+Ascension Island — fall back to emoji derived from the ISO code, so every
+country has a flag either way.
 
-[`Tools/fetch-flags.sh`](Tools/fetch-flags.sh) regenerates the catalogue and
-pins the flag-icons version. It caps each SVG's intrinsic size at 160pt:
-without that Xcode rasterises up to 1536 and the catalogue is 7.8MB instead of
-2.6MB. 160 x 3 = 480px, which is what the largest use — an iOS `systemSmall`
-widget at 3x — actually needs.
+They ship as PNG, not SVG, and that matters. Xcode's asset catalogues accept
+SVG but implement only a subset of it: 71 of these flags use `clipPath` and 60
+use `<use>`. Those compiled without complaint and rendered **wrong** — Burundi
+came out a black square, Cameroon yellow smears. A quarter of the set was
+broken and nothing but looking at the screen would have caught it.
 
-Size is worth watching. Every target that links FlagKit carries its own 2.6MB
-copy of the catalogue, so the watch app is 6.5MB and the iOS app 20MB
-including the embedded watch app.
+[`Tools/rasterise.swift`](Tools/rasterise.swift) renders each file through
+WebKit, which is a complete SVG engine and already on the machine, so this
+needs no dependency. Output is opaque and 384px square: the alpha channel is
+waste on flags that are opaque squares, and 384 covers the largest real use —
+an iOS `systemSmall` widget at 3x — while the watch never asks for more than
+about 110px.
 
-Making FlagKit a dynamic library does not fix this. Measured: the watch app
-goes to 5.6MB, and that 0.9MB is deduplicated code — SPM still copies the
-resource bundle into the extension. Not worth the launch cost in a
-complication, so FlagKit stays static.
+    catalogue   3.4MB      watch app  8.5MB      iOS app  16MB
+
+The catalogue is duplicated into all four targets, so every byte is paid four
+times. The iOS app still comes in under the old SVG build because Xcode was
+rasterising each SVG at three scales where one PNG now serves.
+
+[`Tools/fetch-flags.sh`](Tools/fetch-flags.sh) does the whole pipeline —
+download, pin the version, rasterise — so none of this is a one-off.
 
 ## Building
 
