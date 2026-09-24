@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import FlagKit
 
@@ -188,4 +189,69 @@ import Testing
     let china = Set(Countries.build(deviceRegion: "CN").map(\.id.code))
     #expect(open.subtracting(china) == ["tw"])
     #expect(china.subtracting(open).isEmpty)
+}
+
+// MARK: - Favourites
+
+private func makeDefaults() -> UserDefaults {
+    let d = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
+    d.removePersistentDomain(forName: d.description)
+    return d
+}
+
+@Test func favouritesStartEmptyAndToggle() {
+    let favourites = Favourites(defaults: makeDefaults())
+    let br = FlagID(collection: "countries", code: "br")
+    #expect(favourites.ids.isEmpty)
+    favourites.toggle(br)
+    #expect(favourites.contains(br))
+    favourites.toggle(br)
+    #expect(!favourites.contains(br))
+}
+
+@Test func newestFavouriteComesFirst() {
+    let favourites = Favourites(defaults: makeDefaults())
+    let br = FlagID(collection: "countries", code: "br")
+    let jp = FlagID(collection: "countries", code: "jp")
+    favourites.toggle(br)
+    favourites.toggle(jp)
+    #expect(favourites.ids == [jp, br])
+}
+
+@Test func favouritesPersistAcrossInstances() {
+    let defaults = makeDefaults()
+    let br = FlagID(collection: "countries", code: "br")
+    Favourites(defaults: defaults).toggle(br)
+    #expect(Favourites(defaults: defaults).contains(br))
+}
+
+@Test func unknownFavouritesAreDroppedWhenResolved() {
+    let defaults = makeDefaults()
+    defaults.set(["countries/br", "clubs/gone", "nonsense"], forKey: "favourites")
+    let favourites = Favourites(defaults: defaults)
+    #expect(favourites.ids.count == 2)                  // "nonsense" has no slash
+    #expect(favourites.flags().map { $0.id.code } == ["br"]) // clubs/gone does not resolve
+}
+
+// MARK: - Grouping
+
+@Test func countriesCarryTheirContinent() throws {
+    let brazil = try #require(Flag.default)
+    // CLDR files countries under the continent (019 Americas) rather than the
+    // subcontinent (005 South America). Five broad headings browse better than
+    // twenty-two narrow ones, so the coarser grouping is the one we want.
+    #expect(brazil.group == "Americas")
+}
+
+@Test func groupsAreFewEnoughToBrowse() {
+    let groups = Set(Countries.flags.compactMap(\.group))
+    #expect(groups.count <= 8, "\(groups.sorted())")
+    #expect(groups.contains("Europe"))
+}
+
+@Test func almostEveryCountryIsGrouped() {
+    let ungrouped = Countries.flags.filter { $0.group == nil }
+    // A handful of regions have no continent in CLDR; a large number would
+    // mean the lookup broke rather than the data being sparse.
+    #expect(ungrouped.count < 10, "ungrouped: \(ungrouped.map(\.abbreviation))")
 }
