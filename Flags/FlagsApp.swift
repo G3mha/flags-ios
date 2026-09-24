@@ -1,10 +1,14 @@
+import FlagKit
 import SwiftUI
 
 @main
 struct FlagsApp: App {
+    @State private var favourites = Favourites()
+
     var body: some Scene {
         WindowGroup {
-            FlagBrowser()
+            FlagBrowserView()
+                .environment(favourites)
         }
     }
 }
