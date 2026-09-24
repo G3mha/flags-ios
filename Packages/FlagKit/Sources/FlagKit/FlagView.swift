@@ -1,6 +1,10 @@
 import SwiftUI
 import WidgetKit
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 public enum FlagShape: Sendable {
     /// Circular complication slots and Lock Screen accessories.
     case circle
@@ -52,9 +56,32 @@ public struct FlagView: View {
                 .minimumScaleFactor(0.01)
                 .lineLimit(1)
         case .asset(let name):
+            // Resolved through UIImage rather than Image(_:bundle:).
+            //
+            // In a widget extension SwiftUI's Image(_:bundle:) renders nothing
+            // for these assets even though the catalogue is present and
+            // Bundle.module resolves - verified with assetutil, both the app's
+            // and the extension's Assets.car carry all 514 entries. The same
+            // call works in the app.
+            //
+            // Falling back to the flattened form matters: a complication that
+            // cannot load its artwork should still read as a country rather
+            // than render nothing at all, which is what shipped before.
+            // UIKit is absent on the macOS host the package's tests run on,
+            // so that build keeps the plain SwiftUI path.
+            #if canImport(UIKit)
+            if let image = UIImage(named: name, in: .module, with: nil) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                flattened
+            }
+            #else
             Image(name, bundle: .module)
                 .resizable()
                 .scaledToFill()
+            #endif
         }
     }
 
