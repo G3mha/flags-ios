@@ -9,7 +9,7 @@ let package = Package(
         .library(name: "FlagKit", targets: ["FlagKit"]),
     ],
     targets: [
-        .target(name: "FlagKit", resources: [.process("Resources")]),
+        .target(name: "FlagKit"),
         .testTarget(name: "FlagKitTests", dependencies: ["FlagKit"]),
     ]
 )

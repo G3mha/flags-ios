@@ -11,6 +11,11 @@
 # Xcode asset catalogs have taken SVG directly since Xcode 12, so no
 # rasterising tool is needed - the SVGs go in as-is.
 #
+# The catalogue lives in Assets/ and is a member of all four targets rather
+# than a Swift package resource. As an SPM resource, Image(_:bundle: .module)
+# rendered nothing inside a widget extension even though the catalogue was
+# present, which left the watch complication blank.
+#
 # flag-icons is MIT. Its LICENSE is copied into the catalog so the notice
 # ships with the artwork, which MIT requires.
 #
@@ -20,7 +25,7 @@ set -euo pipefail
 
 VERSION="${1:-7.5.0}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CATALOG="$ROOT/Packages/FlagKit/Sources/FlagKit/Resources/Flags.xcassets"
+CATALOG="$ROOT/Assets/Flags.xcassets"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
