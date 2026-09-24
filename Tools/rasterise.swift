@@ -81,11 +81,28 @@ final class Renderer: NSObject, WKNavigationDelegate {
     }
 }
 
+/// Redraws onto an opaque bitmap before encoding.
+///
+/// A WebKit snapshot carries an alpha channel these flags never use — they are
+/// opaque squares — and that alpha is a quarter of every file. Dropping it,
+/// and rendering no larger than anything actually asks for, is the difference
+/// between a 7.4MB catalogue and a manageable one. The catalogue is duplicated
+/// into all four targets, so every byte here is paid four times.
 func png(from image: NSImage, side: Int) -> Data? {
     guard let cg = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
-    let rep = NSBitmapImageRep(cgImage: cg)
-    rep.size = NSSize(width: side, height: side)
-    return rep.representation(using: .png, properties: [.compressionFactor: 1.0])
+    guard let context = CGContext(
+        data: nil, width: side, height: side,
+        bitsPerComponent: 8, bytesPerRow: 0,
+        space: CGColorSpace(name: CGColorSpace.sRGB)!,
+        bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+    ) else { return nil }
+    context.interpolationQuality = .high
+    context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1))
+    context.fill(CGRect(x: 0, y: 0, width: side, height: side))
+    context.draw(cg, in: CGRect(x: 0, y: 0, width: side, height: side))
+    guard let flattened = context.makeImage() else { return nil }
+    return NSBitmapImageRep(cgImage: flattened)
+        .representation(using: .png, properties: [:])
 }
 
 let app = NSApplication.shared
