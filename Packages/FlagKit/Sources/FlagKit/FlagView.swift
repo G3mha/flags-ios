@@ -38,12 +38,19 @@ public struct FlagView: View {
             .clipShape(clipShape)
     }
 
+    /// Always the artwork.
+    ///
+    /// This used to swap in the country code whenever the mode was not
+    /// fullColor, on the assumption that a flattened flag would be an
+    /// unreadable blob. That was wrong, and it made every iOS Lock Screen
+    /// accessory - which is always vibrant - show two letters instead of a
+    /// flag. Desaturating Brazil still leaves a light diamond on mid grey with
+    /// a dark disc, which reads as a flag; "BR" does not.
+    ///
+    /// The code is still the fallback for artwork that cannot be loaded at all,
+    /// which is a different problem.
     @ViewBuilder private var content: some View {
-        if renderingMode == .fullColor {
-            artwork
-        } else {
-            flattened
-        }
+        artwork
     }
 
     @ViewBuilder private var artwork: some View {
@@ -70,9 +77,7 @@ public struct FlagView: View {
             // that build keeps the plain SwiftUI path.
             #if canImport(UIKit)
             if let image = UIImage(named: name) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
+                bitmap(image)
             } else {
                 flattened
             }
@@ -83,6 +88,24 @@ public struct FlagView: View {
             #endif
         }
     }
+
+    #if canImport(UIKit)
+    /// `widgetAccentedRenderingMode` keeps the colour where the system is only
+    /// tinting rather than fully desaturating, such as a tinted Home Screen.
+    /// It arrived after this package's minimum, hence the branch.
+    @ViewBuilder private func bitmap(_ image: UIImage) -> some View {
+        if #available(iOS 18, watchOS 11, *) {
+            Image(uiImage: image)
+                .resizable()
+                .widgetAccentedRenderingMode(.fullColor)
+                .scaledToFill()
+        } else {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+        }
+    }
+    #endif
 
     private var flattened: some View {
         Text(flag.abbreviation)
