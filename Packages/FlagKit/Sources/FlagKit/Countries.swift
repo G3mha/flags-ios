@@ -81,7 +81,8 @@ public enum Countries: FlagCollection {
                     name: name,
                     artwork: artwork(for: code),
                     abbreviation: code.uppercased(),
-                    isListed: restriction != .unlisted
+                    isListed: restriction != .unlisted,
+                    group: continentName(of: code, in: locale)
                 )
             }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
@@ -97,6 +98,15 @@ public enum Countries: FlagCollection {
         return CountryAssets.available.contains(code)
             ? .asset(name: "flag-\(code)")
             : .emoji(emoji(for: code))
+    }
+
+    /// The localized continent name, used as a browse heading.
+    ///
+    /// Continents come from the same CLDR data as the region list, so they
+    /// arrive translated and stay consistent with the names beside them.
+    static func continentName(of code: String, in locale: Locale) -> String? {
+        guard let continent = Locale.Region(code).continent else { return nil }
+        return locale.localizedString(forRegionCode: continent.identifier)
     }
 
     /// "BR" -> "🇧🇷". Regional indicator symbols sit at U+1F1E6, which is
