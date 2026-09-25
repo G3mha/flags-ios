@@ -76,7 +76,7 @@ public struct FlagView: View {
             // UIKit is absent on the macOS host the package's tests run on, so
             // that build keeps the plain SwiftUI path.
             #if canImport(UIKit)
-            if let image = UIImage(named: name) {
+            if let image = UIImage(named: name).map(renderable) {
                 bitmap(image)
             } else {
                 flattened
@@ -88,6 +88,40 @@ public struct FlagView: View {
             #endif
         }
     }
+
+    #if os(watchOS)
+    /// Redraws an asset-catalogue image into a plain bitmap.
+    ///
+    /// A watchOS widget extension draws nothing at all for an image that came
+    /// from an asset catalogue. The image is there — `UIImage(named:)` returns
+    /// it — but SwiftUI renders empty, which is why the complication was blank
+    /// while the app showed the same flag fine.
+    ///
+    /// Not a size problem, though it looks like one at first: a 64px image
+    /// drawn in code renders, and so does this same 384px flag once it has been
+    /// through a CGContext. What matters is that the bitmap is concrete rather
+    /// than whatever deferred representation the catalogue hands back.
+    ///
+    /// iOS has no such trouble, so it keeps the image untouched.
+    private func renderable(_ image: UIImage) -> UIImage {
+        guard let source = image.cgImage,
+              let context = CGContext(
+                data: nil,
+                width: source.width,
+                height: source.height,
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+              )
+        else { return image }
+        context.interpolationQuality = .high
+        context.draw(source, in: CGRect(x: 0, y: 0, width: source.width, height: source.height))
+        return context.makeImage().map(UIImage.init(cgImage:)) ?? image
+    }
+    #elseif canImport(UIKit)
+    private func renderable(_ image: UIImage) -> UIImage { image }
+    #endif
 
     #if canImport(UIKit)
     /// `widgetAccentedRenderingMode` keeps the colour where the system is only
