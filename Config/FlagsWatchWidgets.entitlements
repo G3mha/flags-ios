@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- The group, and deliberately not the iCloud key-value store. The
+	     extension only reads favourites that the app has already written, so
+	     it needs the shared container and nothing else. Leaving iCloud off
+	     here keeps the extensions out of the provisioning that capability
+	     drags in. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.dev.enriccogemha.flags</string>
+	</array>
+</dict>
+</plist>

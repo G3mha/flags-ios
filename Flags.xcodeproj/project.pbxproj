@@ -526,6 +526,7 @@
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
+				CODE_SIGN_ENTITLEMENTS = Config/FlagsWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
@@ -546,6 +547,7 @@
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
+				CODE_SIGN_ENTITLEMENTS = Config/FlagsWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
@@ -614,6 +616,7 @@
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
+				CODE_SIGN_ENTITLEMENTS = Config/FlagsWatchWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
@@ -634,6 +637,7 @@
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
+				CODE_SIGN_ENTITLEMENTS = Config/FlagsWatchWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;

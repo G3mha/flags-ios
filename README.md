@@ -223,6 +223,16 @@ If the capability is ever removed, set `Favourites.cloudStore` back to nil.
 Reaching for `NSUbiquitousKeyValueStore.default` without the entitlement logs
 a fault on every launch and syncs nothing.
 
+Favourites live in the **app group** `group.dev.enriccogemha.flags`, not in
+`UserDefaults.standard`. A widget extension gets its own data container, so
+`.standard` inside one is a different store from the app's — a flag starred in
+the app is simply not there when the complication gallery looks. All four
+targets carry the group; only the two apps carry iCloud, since the extensions
+read what the app has already written and nothing more.
+
+The two are doing different jobs. The group shares within one device, between
+an app and its extensions. iCloud shares between devices. Favourites need both.
+
 Note that the entitlements live in `Config/` rather than beside the sources:
 `Flags/` and `FlagsWatch/` are synchronized folders, so a file dropped in one
 becomes a bundled resource.

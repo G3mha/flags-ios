@@ -8,5 +8,13 @@
 	     favourites, which is the entire point of turning this on. -->
 	<key>com.apple.developer.ubiquity-kvstore-identifier</key>
 	<string>$(TeamIdentifierPrefix)dev.enriccogemha.flags</string>
+	<!-- Shared with the widget extensions. An extension gets its own data
+	     container, so UserDefaults.standard there is a different store from the
+	     app's; without this the complication gallery cannot see a favourite.
+	     This shares within one device. Across devices is iCloud's job. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.dev.enriccogemha.flags</string>
+	</array>
 </dict>
 </plist>

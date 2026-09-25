@@ -35,7 +35,23 @@ private final class ObserverToken: @unchecked Sendable {
 @MainActor
 @Observable
 public final class Favourites {
-    private static let key = "favourites"
+    // nonisolated so storedIDs can read the store off the main actor.
+    private nonisolated static let key = "favourites"
+
+    /// The container the app and its widget extensions share.
+    ///
+    /// An extension gets its own data container, so `UserDefaults.standard`
+    /// inside one is a different store from the app's — a favourite starred in
+    /// the app is simply not there when the complication gallery looks. The
+    /// app group is the only way across that boundary.
+    ///
+    /// Within one device. Between devices is iCloud's job; see `cloudStore`.
+    /// Computed rather than stored because `UserDefaults` is not `Sendable`,
+    /// so it cannot be a nonisolated static constant. Each call hands back a
+    /// separate object over the same backing store, which is what matters.
+    public nonisolated static var sharedDefaults: UserDefaults {
+        UserDefaults(suiteName: "group.dev.enriccogemha.flags") ?? .standard
+    }
 
     private let local: UserDefaults
     private let cloud: NSUbiquitousKeyValueStore?
@@ -58,13 +74,23 @@ public final class Favourites {
     ///   `com.apple.developer.ubiquity-kvstore-identifier` entitlement logs a
     ///   fault on every launch — "BUG IN CLIENT OF KVS" — and syncs nothing,
     ///   so the capability has to come first. See `Favourites.cloudStore`.
-    public init(local: UserDefaults = .standard, cloud: NSUbiquitousKeyValueStore? = nil) {
+    public init(
+        local: UserDefaults = Favourites.sharedDefaults,
+        cloud: NSUbiquitousKeyValueStore? = nil
+    ) {
         self.local = local
         self.cloud = cloud
-        self.records = Self.merge(
+        var merged = Self.merge(
             Self.decode(local.data(forKey: Self.key)),
             Self.decode(cloud?.data(forKey: Self.key))
         )
+        // Carry over anything starred before favourites moved into the app
+        // group. Merging rather than copying means a record already in the
+        // group wins if it is the newer of the two.
+        if local != .standard {
+            merged = Self.merge(merged, Self.decode(UserDefaults.standard.data(forKey: Self.key)))
+        }
+        self.records = merged
         startObservingCloud()
         cloud?.synchronize()
     }
