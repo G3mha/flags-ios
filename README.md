@@ -100,7 +100,6 @@ which is why it is a separate set with its own test rather than entries in
 Mayotte and Svalbard among them — because someone lives there and may want to
 pick where they are from. Ten entries still show the French tricolour.
 
-
 Club crests and game logos are trademarked in a way country flags aren't.
 That's a licensing problem for those packs, not a coding one.
 
@@ -112,6 +111,11 @@ because nothing looks them up. Four regions the set doesn't cover — Sark,
 Ceuta & Melilla, Tristan da Cunha, Ascension Island — fall back to emoji
 derived from the ISO code, so every country has a flag either way.
 
+One flag is ours. flag-icons ships `sh.svg` as a byte-for-byte copy of
+`gb.svg`, so Saint Helena flew a plain Union Jack instead of its own blue
+ensign. [`Assets/flag-overrides`](Assets/flag-overrides) holds the replacement
+and the reasoning; `fetch-flags.sh` applies anything there over the downloaded
+set, so an upgrade can't undo the correction.
 
 They ship as PNG, not SVG, and that matters. Xcode's asset catalogues accept
 SVG but implement only a subset of it: 71 of these flags use `clipPath` and 60
@@ -236,3 +240,8 @@ becomes a bundled resource.
 ## Licence
 
 MIT. See [LICENSE](LICENSE).
+
+The bundled artwork is flag-icons, also MIT; its notice ships beside the
+catalogue as `flag-icons-LICENSE.txt`. The one flag we assembled ourselves
+combines flag-icons' Union Jack with a public-domain coat of arms, both
+recorded in [`Assets/flag-overrides/README.md`](Assets/flag-overrides/README.md).

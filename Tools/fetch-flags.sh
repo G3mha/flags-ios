@@ -74,6 +74,37 @@ JSON
   count=$((count + 1))
 done
 
+# Replace any flag we supply ourselves. Applied after the download so an
+# upgrade cannot quietly reintroduce the file being corrected, and before the
+# CountryAssets list is written so an override can add a code the set omits.
+# See Assets/flag-overrides/README.md for why each one is there.
+OVERRIDES="$ROOT/Assets/flag-overrides"
+if [ -d "$OVERRIDES" ]; then
+  for svg in "$OVERRIDES"/*.svg; do
+    [ -e "$svg" ] || continue
+    code="$(basename "$svg" .svg)"
+    set_dir="$CATALOG/flag-$code.imageset"
+    if [ ! -d "$set_dir" ]; then
+      mkdir -p "$set_dir"
+      count=$((count + 1))
+    fi
+    rm -f "$set_dir"/*.svg
+    cp "$svg" "$set_dir/flag-$code.svg"
+    cat > "$set_dir/Contents.json" <<JSON
+{
+  "images" : [
+    {
+      "filename" : "flag-$code.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : { "author" : "xcode", "version" : 1 }
+}
+JSON
+    echo "Override: $code"
+  done
+fi
+
 # Tell FlagKit which codes actually have artwork, so Countries can prefer an
 # asset and fall back to emoji for anything missing.
 GEN="$ROOT/Packages/FlagKit/Sources/FlagKit/CountryAssets.swift"
