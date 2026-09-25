@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Both the phone app and the watch app name the SAME store, spelled with
+	     the iOS app's bundle id. The usual $(CFBundleIdentifier) would give
+	     each target its own store and they would never see each other's
+	     favourites, which is the entire point of turning this on. -->
+	<key>com.apple.developer.ubiquity-kvstore-identifier</key>
+	<string>$(TeamIdentifierPrefix)dev.enriccogemha.flags</string>
+</dict>
+</plist>

@@ -72,12 +72,15 @@ public final class Favourites {
 
     /// The store the apps pass in.
     ///
-    /// Return `.default` here once iCloud → Key-value storage is enabled on the
-    /// Flags and FlagsWatch targets in Signing & Capabilities. One line, and
-    /// both platforms start sharing favourites. Until then this stays nil and
-    /// everything works per-device.
+    /// Both apps carry the iCloud Key-value storage entitlement, naming the
+    /// same store, so favourites follow the person between their phone and
+    /// their watch.
+    ///
+    /// Set this back to nil if the capability is ever removed: reaching for
+    /// `.default` without the entitlement logs a fault on every launch and
+    /// syncs nothing.
     public static var cloudStore: NSUbiquitousKeyValueStore? {
-        nil
+        .default
     }
 
     public func contains(_ id: FlagID) -> Bool {

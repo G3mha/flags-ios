@@ -161,29 +161,41 @@ at fault:
 folders, referenced by all four targets. Keep it that way — putting it back in
 a package resource bundle reintroduces the bug above.
 
-## Turning on favourites sync
+## Favourites sync
 
-Favourites are stored per device. To share them across someone's iPhone, Apple
-Watch and anything else they own:
+Favourites follow the person between their iPhone and their Apple Watch,
+through iCloud's key-value store. Chosen over WatchConnectivity because it
+reaches every device they own rather than just the paired watch, survives a
+reinstall, and needs no session plumbing.
 
-1. In Xcode, add **iCloud → Key-value storage** to the `Flags` and `FlagsWatch`
-   targets under Signing & Capabilities. It needs a paid Developer Program
-   membership.
-2. Change `Favourites.cloudStore` to return `.default`.
+Both targets carry the **iCloud → Key-value storage** capability, and both
+entitlements in [`Config/`](Config) name the *same* store:
 
-That is the whole switch. The merge already handles two devices disagreeing:
-every change carries a timestamp and the later one wins per flag, so starring
-on the phone and unstarring on the watch resolve the way the person expects
-rather than one device clobbering the other.
+    $(TeamIdentifierPrefix)dev.enriccogemha.flags
 
-Deliberately not on by default. Touching `NSUbiquitousKeyValueStore.default`
-without the entitlement logs a fault on every launch and syncs nothing.
+That matters. The usual `$(CFBundleIdentifier)` would give the watch app its
+own store — everything would appear to work, and the two devices would never
+see each other's favourites.
 
-iCloud is the channel, not the source of truth — the local copy is what gets
-read at launch, so the list is there instantly and still works with no iCloud
-account, no network and no entitlement.
+Each flag records whether it is starred and when that last changed, and a
+merge takes the later record per flag. A plain list of starred ids gives no
+way to tell "this device has not heard about Japan yet" from "this device
+deliberately unstarred Japan", so additions or removals would quietly go
+missing depending which way the merge leaned.
 
-## Before shipping
+Local `UserDefaults` remains the source of truth and is what gets read at
+launch, so the list is instant and still works with no iCloud account and no
+network. iCloud is the channel between devices, not the store.
+
+If the capability is ever removed, set `Favourites.cloudStore` back to nil.
+Reaching for `NSUbiquitousKeyValueStore.default` without the entitlement logs
+a fault on every launch and syncs nothing.
+
+Note that the entitlements live in `Config/` rather than beside the sources:
+`Flags/` and `FlagsWatch/` are synchronized folders, so a file dropped in one
+becomes a bundled resource.
+
+## Before shipping## Before shipping
 
 - The region list comes from `Locale`, so it shifts with the OS version. It's
   close to ISO 3166-1 but not identical — `XK` for Kosovo is a user-assigned
