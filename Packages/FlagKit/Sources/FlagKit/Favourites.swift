@@ -123,6 +123,22 @@ public final class Favourites {
         ids.compactMap(registry.flag(for:))
     }
 
+    /// Starred flags, newest first, read without the main actor.
+    ///
+    /// `recommendations()` is nonisolated and synchronous, so it cannot build a
+    /// `Favourites`. It only wants the ids, and those are JSON sitting in the
+    /// shared container, so reading them directly costs nothing and keeps the
+    /// widget extension off the main actor.
+    public nonisolated static func storedIDs(
+        in defaults: UserDefaults = Favourites.sharedDefaults
+    ) -> [FlagID] {
+        decode(defaults.data(forKey: key))
+            .values
+            .filter(\.starred)
+            .sorted { $0.changed > $1.changed }
+            .map(\.id)
+    }
+
     // MARK: - Syncing
 
     /// Takes the later record for each flag.

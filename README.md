@@ -233,6 +233,21 @@ read what the app has already written and nothing more.
 The two are doing different jobs. The group shares within one device, between
 an app and its extensions. iCloud shares between devices. Favourites need both.
 
+## The complication gallery
+
+`recommendations()` is the shortlist the gallery offers before anyone has
+configured anything. It leads with favourites, then the device's region, then
+the default, dropping duplicates and capping at eight. Starring a flag on the
+phone therefore puts it in the watch's gallery, since favourites travel over
+iCloud.
+
+`Favourites.storedIDs` exists because `recommendations()` is nonisolated and
+synchronous and cannot build a main-actor `Favourites`. It reads the same JSON
+straight out of the shared container.
+
+None of this limits what can be chosen. The shortlist is a convenience; the
+complication's own settings list every flag with a search field.
+
 Note that the entitlements live in `Config/` rather than beside the sources:
 `Flags/` and `FlagsWatch/` are synchronized folders, so a file dropped in one
 becomes a bundled resource.

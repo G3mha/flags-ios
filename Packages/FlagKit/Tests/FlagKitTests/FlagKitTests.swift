@@ -285,6 +285,75 @@ private func makeDefaults() -> UserDefaults {
     #expect(favourites.flags().map { $0.id.code } == ["br"])
 }
 
+// MARK: - Gallery recommendations
+
+private func id(_ code: String) -> FlagID { FlagID(collection: "countries", code: code) }
+
+@Test func favouritesLeadTheGallery() {
+    // The whole point: star a flag on the phone, it syncs, and the watch's
+    // complication gallery offers it.
+    let flags = FlagTimelineProvider.suggestedFlags(
+        favourites: [id("jp"), id("pt")],
+        deviceRegion: "US"
+    )
+    #expect(flags.prefix(2).map { $0.id.code } == ["jp", "pt"])
+}
+
+@Test func theDeviceRegionFollowsTheFavourites() {
+    let flags = FlagTimelineProvider.suggestedFlags(favourites: [id("jp")], deviceRegion: "US")
+    #expect(flags.map { $0.id.code }.contains("us"))
+    #expect(flags.first?.id.code == "jp")
+}
+
+@Test func withNoFavouritesTheRegionStillLeads() {
+    let flags = FlagTimelineProvider.suggestedFlags(favourites: [], deviceRegion: "US")
+    #expect(flags.first?.id.code == "us")
+}
+
+@Test func nothingIsOfferedTwice() {
+    // A Brazilian who has starred Brazil should see it once, not three times
+    // over: favourite, device region, and default all resolve to it.
+    let flags = FlagTimelineProvider.suggestedFlags(favourites: [id("br")], deviceRegion: "BR")
+    #expect(flags.map { $0.id.code } == ["br"])
+}
+
+@Test func theGalleryStaysAShortlist() {
+    let many = ["jp", "pt", "fr", "de", "it", "es", "nl", "se", "no", "dk", "fi"].map(id)
+    let flags = FlagTimelineProvider.suggestedFlags(favourites: many, deviceRegion: "US")
+    #expect(flags.count == FlagTimelineProvider.maxRecommendations)
+}
+
+@Test func unknownFavouritesAreSkippedRatherThanBlanking() {
+    // A flag from a pack that is gone must not cost the gallery a slot.
+    let flags = FlagTimelineProvider.suggestedFlags(
+        favourites: [FlagID(collection: "clubs", code: "gone"), id("jp")],
+        deviceRegion: nil
+    )
+    #expect(flags.first?.id.code == "jp")
+}
+
+@MainActor @Test func storedIDsReadsWhatWasStarred() {
+    let defaults = makeDefaults()
+    let favourites = Favourites(local: defaults, cloud: nil)
+    favourites.toggle(id("br"))
+    favourites.toggle(id("jp"))
+
+    // Newest first, matching the order the gallery shows them in.
+    #expect(Favourites.storedIDs(in: defaults) == [id("jp"), id("br")])
+}
+
+@MainActor @Test func storedIDsIgnoresUnstarredFlags() {
+    let defaults = makeDefaults()
+    let favourites = Favourites(local: defaults, cloud: nil)
+    favourites.toggle(id("br"))
+    favourites.toggle(id("br"))
+    #expect(Favourites.storedIDs(in: defaults).isEmpty)
+}
+
+@Test func storedIDsIsEmptyWhenNothingWasEverWritten() {
+    #expect(Favourites.storedIDs(in: makeDefaults()).isEmpty)
+}
+
 // MARK: - Sync merge
 
 private func record(_ code: String, starred: Bool, at seconds: TimeInterval) -> (FlagID, FavouriteRecord) {
