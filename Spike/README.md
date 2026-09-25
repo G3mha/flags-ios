@@ -39,11 +39,12 @@ plain asset and `.fullColor` variants did not, and at the time that was written
 off as safe, because rendering mode is a property of the slot rather than of
 what you draw into it.
 
-The inference was right about the mode and wrong about everything else. A
-watchOS widget extension draws nothing at all for an asset catalogue image,
-which this spike could not have caught: neither variant it measured was a
-bitmap. The real app needed a separate fix, described in the complication
-notes in the top-level README.
+The inference was right about the mode and wrong about everything else. In the
+real app no bitmap renders in a watch complication at all — not one from a
+catalogue, not one built in code — while vector drawing renders in full
+colour. Shapes and emoji are both vector, so the two variants this spike
+measured were exactly the two that could not have caught it. See the
+complication notes in the top-level README.
 
 Worth remembering when reading any spike. It proves what it measured, not what
 it was aimed at.

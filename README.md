@@ -23,8 +23,11 @@ mean saturation carrying all three of the Brazilian flag's hues.
 
 Two caveats on that spike, because it was narrower than it looked. It measured
 **SwiftUI shapes and emoji** — the asset-image variant never landed in a slot,
-so the path the real app uses went untested for a long time afterwards. And
-only Meridian was measured; other faces are untested.
+so the path the real app actually uses went untested. When it was finally
+tested it turned out not to work: no bitmap renders in a watch complication,
+while vector drawing does. Both things the spike measured are vector, which is
+why it saw nothing wrong. See [Complication artwork](#complication-artwork).
+And only Meridian was measured; other faces are untested.
 
 `FlagView` draws the flag in **every** mode. It used to swap in the country
 code whenever the mode was not `fullColor`, on the assumption that a flattened
@@ -155,37 +158,81 @@ Simulator builds need none of this.
 
 ## Complication artwork
 
-Working, verified on a Meridian sub-dial: Brazil in full colour, all three
-hues. Getting there took three separate bugs, and the notes below exist
-because each one looked like something it wasn't.
+**A flag does not currently render in a watch complication.** The slot draws,
+the right flag is chosen, and the artwork comes out as a flat block of colour.
+The iPhone Lock Screen and Home Screen widgets are fine, and so is the watch
+app itself — this is the watch complication only.
+
+Measured 2026-09-25 on the watchOS 26.5 simulator, Meridian top sub-dial, with
+the family and rendering mode read from the environment and drawn on screen as
+dot counts rather than assumed: `accessoryCircular`, `fullColor`. All of the
+following were drawn in one view at the same time:
+
+| drawn | result |
+| --- | --- |
+| `Color.orange`, `Color.black`, `Color.green` | correct colour |
+| `Canvas { ctx.fill(Path(...), with: .color(.red)) }` | correct colour |
+| `Image(uiImage:)` from the asset catalogue | flat tint |
+| the same image redrawn through `CGContext` | flat tint |
+| a solid red `UIImage` built entirely in code | flat tint |
+| `Canvas { ctx.draw(Image(uiImage:), in:) }` | flat tint |
+
+Vector drawing renders. Rasters do not, whatever their provenance. The image
+keeps its frame — three 26pt squares stayed three distinct squares — and loses
+every pixel of its content.
+
+**Only the simulator has been checked.** No physical watch has been tried, and
+this may well be a simulator limitation. That is the next thing to establish,
+because a fix costs either the artwork's fidelity or a lot of vector work:
+flags would have to be drawn as shapes, or fall back to the country emoji,
+which the spike measured rendering at 0.72-0.73 saturation.
+
+### What this section used to claim
+
+That the complication worked, verified on a Meridian sub-dial in full colour,
+and that the reason was `FlagView` redrawing the artwork through a `CGContext`
+because a watchOS widget extension draws nothing for asset-catalogue images.
+
+Both halves are wrong. A solid red `UIImage` built in code renders no better
+than the catalogue one, so the problem was never asset catalogues, and the
+redraw never fixed it. `FlagView`, `FlagWidgetView` and the widget bundle have
+not changed since the commit that supposedly proved it worked, so nothing
+regressed — the earlier reading was simply wrong.
+
+The deciding test, worth reaching for before theorising: draw three images side
+by side — the real one, a redrawn one, and one built in code — next to a plain
+`Color`. If the code-built image is flat too, the problem is rasters as a
+category and no work on the asset pipeline will touch it.
+
+`FlagView.renderable()` still does the `CGContext` redraw on watchOS. It is
+left in because it is harmless and unproven either way on real hardware; it is
+a candidate for removal once a physical watch has been tried.
+
+The spike in `Spike/` measured SwiftUI shapes and emoji, and both rendered.
+That is consistent with all of the above: both are vector. It never landed a
+bitmap in a slot, so it never met this.
 
 **Where the catalogue lives.** It used to be a Swift package resource, and
 `Image(_:bundle: .module)` rendered nothing for it inside a widget extension.
 It now lives in `Assets/` as a member of all four targets, resolving through
-`Bundle.main` like any ordinary widget asset.
-
-**Why the artwork is redrawn on watchOS.** A watchOS widget extension draws
-nothing for an image that came from an asset catalogue. The image is there —
-`UIImage(named:)` returns it — but SwiftUI renders empty, which is why the
-complication stayed blank while the watch app showed the same flag correctly.
-`FlagView` redraws it through a `CGContext` first. iOS needs no such thing.
-
-That one looks like a size limit and is not. Downscaling to 96px makes it
-render, which is a convincing wrong answer; redrawing at the **same 384px**
-also makes it render. What matters is a concrete bitmap, not a small one.
+`Bundle.main`. That move is what the iOS widgets needed; it is not what the
+watch complication needed, and it did not fix it.
 
 **Two red herrings**, both kept in the codebase untouched because neither was
 at fault:
 
 - An AppIntents error, `FlagEntity is not a registered AppEntity identifier`,
-  fires on every watch snapshot. The flag resolves regardless.
+  fires on every watch snapshot. The flag resolves regardless — the intent
+  decodes with the right flag and presentation, which the logs show.
 - `recommendations()` changes nothing when emptied.
 
 ## Layout note
 
 `Assets/Flags.xcassets` is deliberately outside the per-target synchronized
-folders, referenced by all four targets. Keep it that way — putting it back in
-a package resource bundle reintroduces the bug above.
+folders, referenced by all four targets. Keep it that way — as a package
+resource bundle, `Image(_:bundle: .module)` rendered nothing inside a widget
+extension, which is what would break the iOS widgets. It is a separate problem
+from the watch complication above, and unlike that one it is fixed.
 
 ## Favourites sync
 
@@ -264,8 +311,12 @@ it the shortlist is cached and a newly starred flag never reaches the gallery �
 verified in the simulator, where it stayed stale across a reinstall and a
 reboot until that call was added.
 
-None of this limits what can be chosen. The shortlist is a convenience; the
-complication's own settings list every flag with a search field.
+That claim used to end "the shortlist is a convenience; the complication's own
+settings list every flag with a search field." It does not. That screen appears
+only while the extension has no recommendations yet — a fresh install, before
+the system has asked — and watchOS shows a generic configurable entry as a
+fallback. Once recommendations exist they replace it, chevron and all. What the
+list holds is what can be worn.
 
 Note that the entitlements live in `Config/` rather than beside the sources:
 `Flags/` and `FlagsWatch/` are synchronized folders, so a file dropped in one
