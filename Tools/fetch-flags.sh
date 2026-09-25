@@ -8,8 +8,9 @@
 # control over detail at complication size, and nothing at all for regions the
 # font omits. This swaps in real vector artwork.
 #
-# Xcode asset catalogs have taken SVG directly since Xcode 12, so no
-# rasterising tool is needed - the SVGs go in as-is.
+# Xcode asset catalogs have taken SVG since Xcode 12, but only a subset of the
+# format, so the SVGs cannot go in as-is. They are rendered to PNG through
+# WebKit at the end of this script; see Tools/rasterise.swift.
 #
 # The catalogue lives in Assets/ and is a member of all four targets rather
 # than a Swift package resource. As an SPM resource, Image(_:bundle: .module)
@@ -130,6 +131,9 @@ echo "Wrote $count SVGs to $CATALOG"
 # yellow smears. WebKit is a complete SVG engine, so render through it and
 # ship PNGs instead.
 echo "Rasterising through WebKit"
-swift "$ROOT/Tools/rasterise.swift" "$CATALOG" 480
+# 384, matching what is committed. The catalogue is duplicated into all four
+# targets, so every extra pixel is paid four times; 480 put the iOS app at
+# 17MB for no visible gain at complication size.
+swift "$ROOT/Tools/rasterise.swift" "$CATALOG" 384
 
 echo "Run: swift test --package-path Packages/FlagKit"
