@@ -124,8 +124,15 @@ download, pin the version, rasterise — so none of this is a one-off.
 
 ```sh
 swift test --package-path Packages/FlagKit
-xcodebuild build -project Flags.xcodeproj -scheme Flags -destination 'generic/platform=iOS'
+xcodebuild build -project Flags.xcodeproj -scheme Flags -destination 'generic/platform=iOS' -allowProvisioningUpdates
 ```
+
+`-allowProvisioningUpdates` is needed for anything signed for a device. The
+iCloud capability cannot go on a wildcard profile, so the team's App IDs have
+to be explicit ones with iCloud enabled. Xcode.app registers those silently
+the first time it builds; `xcodebuild` refuses to unless given that flag, and
+fails with "provisioning profile doesn't include the iCloud capability".
+Simulator builds need none of this.
 
 ## Complication artwork
 
@@ -186,6 +193,12 @@ missing depending which way the merge leaned.
 Local `UserDefaults` remains the source of truth and is what gets read at
 launch, so the list is instant and still works with no iCloud account and no
 network. iCloud is the channel between devices, not the store.
+
+Key-value storage does not travel between simulators, so the syncing paths
+cannot be tried there. The tests in `FlagKitTests` drive them through a fake
+store instead, which covers adopting what iCloud already holds, writing a star
+through, and pulling another device's change in. Whether real iCloud delivers
+that change still needs two real devices.
 
 If the capability is ever removed, set `Favourites.cloudStore` back to nil.
 Reaching for `NSUbiquitousKeyValueStore.default` without the entitlement logs
