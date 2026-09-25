@@ -161,6 +161,28 @@ at fault:
 folders, referenced by all four targets. Keep it that way — putting it back in
 a package resource bundle reintroduces the bug above.
 
+## Turning on favourites sync
+
+Favourites are stored per device. To share them across someone's iPhone, Apple
+Watch and anything else they own:
+
+1. In Xcode, add **iCloud → Key-value storage** to the `Flags` and `FlagsWatch`
+   targets under Signing & Capabilities. It needs a paid Developer Program
+   membership.
+2. Change `Favourites.cloudStore` to return `.default`.
+
+That is the whole switch. The merge already handles two devices disagreeing:
+every change carries a timestamp and the later one wins per flag, so starring
+on the phone and unstarring on the watch resolve the way the person expects
+rather than one device clobbering the other.
+
+Deliberately not on by default. Touching `NSUbiquitousKeyValueStore.default`
+without the entitlement logs a fault on every launch and syncs nothing.
+
+iCloud is the channel, not the source of truth — the local copy is what gets
+read at launch, so the list is there instantly and still works with no iCloud
+account, no network and no entitlement.
+
 ## Before shipping
 
 - The region list comes from `Locale`, so it shifts with the OS version. It's

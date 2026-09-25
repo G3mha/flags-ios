@@ -3,7 +3,9 @@ import SwiftUI
 
 @main
 struct FlagsWatchApp: App {
-    @State private var favourites = Favourites()
+    // Shares favourites across devices once Favourites.cloudStore returns
+    // the iCloud store; device-local until then.
+    @State private var favourites = Favourites(cloud: Favourites.cloudStore)
 
     var body: some Scene {
         WindowGroup {

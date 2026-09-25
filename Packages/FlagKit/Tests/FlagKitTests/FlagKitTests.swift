@@ -199,8 +199,14 @@ private func makeDefaults() -> UserDefaults {
     return d
 }
 
-@Test func favouritesStartEmptyAndToggle() {
-    let favourites = Favourites(defaults: makeDefaults())
+/// Device-local only; the cloud store is a shared singleton and has no place
+/// in a unit test.
+@MainActor private func makeFavourites(_ defaults: UserDefaults = makeDefaults()) -> Favourites {
+    Favourites(local: defaults, cloud: nil)
+}
+
+@MainActor @Test func favouritesStartEmptyAndToggle() {
+    let favourites = makeFavourites()
     let br = FlagID(collection: "countries", code: "br")
     #expect(favourites.ids.isEmpty)
     favourites.toggle(br)
@@ -209,8 +215,8 @@ private func makeDefaults() -> UserDefaults {
     #expect(!favourites.contains(br))
 }
 
-@Test func newestFavouriteComesFirst() {
-    let favourites = Favourites(defaults: makeDefaults())
+@MainActor @Test func newestFavouriteComesFirst() {
+    let favourites = makeFavourites()
     let br = FlagID(collection: "countries", code: "br")
     let jp = FlagID(collection: "countries", code: "jp")
     favourites.toggle(br)
@@ -218,19 +224,64 @@ private func makeDefaults() -> UserDefaults {
     #expect(favourites.ids == [jp, br])
 }
 
-@Test func favouritesPersistAcrossInstances() {
+@MainActor @Test func favouritesPersistAcrossInstances() {
     let defaults = makeDefaults()
     let br = FlagID(collection: "countries", code: "br")
-    Favourites(defaults: defaults).toggle(br)
-    #expect(Favourites(defaults: defaults).contains(br))
+    makeFavourites(defaults).toggle(br)
+    #expect(makeFavourites(defaults).contains(br))
 }
 
-@Test func unknownFavouritesAreDroppedWhenResolved() {
+@MainActor @Test func unstarringPersistsRatherThanLookingAbsent() {
+    // The distinction the timestamps exist for: a flag that was deliberately
+    // unstarred must not read the same as one never heard of.
     let defaults = makeDefaults()
-    defaults.set(["countries/br", "clubs/gone", "nonsense"], forKey: "favourites")
-    let favourites = Favourites(defaults: defaults)
-    #expect(favourites.ids.count == 2)                  // "nonsense" has no slash
-    #expect(favourites.flags().map { $0.id.code } == ["br"]) // clubs/gone does not resolve
+    let br = FlagID(collection: "countries", code: "br")
+    let first = makeFavourites(defaults)
+    first.toggle(br)
+    first.toggle(br)
+    #expect(!makeFavourites(defaults).contains(br))
+}
+
+@MainActor @Test func unknownFavouritesAreDroppedWhenResolved() {
+    let favourites = makeFavourites()
+    favourites.toggle(FlagID(collection: "countries", code: "br"))
+    favourites.toggle(FlagID(collection: "clubs", code: "gone"))
+    #expect(favourites.ids.count == 2)
+    #expect(favourites.flags().map { $0.id.code } == ["br"])
+}
+
+// MARK: - Sync merge
+
+private func record(_ code: String, starred: Bool, at seconds: TimeInterval) -> (FlagID, FavouriteRecord) {
+    let id = FlagID(collection: "countries", code: code)
+    return (id, FavouriteRecord(id: id, starred: starred, changed: Date(timeIntervalSince1970: seconds)))
+}
+
+@Test func mergeKeepsFlagsStarredOnDifferentDevices() {
+    let phone = Dictionary(uniqueKeysWithValues: [record("br", starred: true, at: 10)])
+    let watch = Dictionary(uniqueKeysWithValues: [record("jp", starred: true, at: 20)])
+    let merged = Favourites.merge(phone, watch)
+    #expect(Set(merged.keys.map(\.code)) == ["br", "jp"])
+}
+
+@Test func mergeLetsTheLaterChangeWin() {
+    let starredEarlier = Dictionary(uniqueKeysWithValues: [record("br", starred: true, at: 10)])
+    let unstarredLater = Dictionary(uniqueKeysWithValues: [record("br", starred: false, at: 20)])
+
+    let unstarWins = Favourites.merge(starredEarlier, unstarredLater)
+    #expect(unstarWins[FlagID(collection: "countries", code: "br")]?.starred == false)
+
+    // And the other way round: an older unstar must not undo a newer star.
+    let starWins = Favourites.merge(unstarredLater, starredEarlier.mapValues {
+        FavouriteRecord(id: $0.id, starred: true, changed: Date(timeIntervalSince1970: 30))
+    })
+    #expect(starWins[FlagID(collection: "countries", code: "br")]?.starred == true)
+}
+
+@Test func mergeIsOrderIndependent() {
+    let a = Dictionary(uniqueKeysWithValues: [record("br", starred: true, at: 10)])
+    let b = Dictionary(uniqueKeysWithValues: [record("br", starred: false, at: 20)])
+    #expect(Favourites.merge(a, b) == Favourites.merge(b, a))
 }
 
 // MARK: - Grouping
