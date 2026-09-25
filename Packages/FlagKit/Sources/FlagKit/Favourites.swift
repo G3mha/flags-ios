@@ -1,5 +1,8 @@
 import Foundation
 import Observation
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 /// One flag's starred state and when it last changed.
 ///
@@ -179,6 +182,9 @@ public final class Favourites {
         guard merged != records else { return }
         records = merged
         writeLocal()
+        // The change came from another device, so the shortlist here is stale
+        // for the same reason it is after a local toggle.
+        notifyWidgets()
     }
 
     private func persist() {
@@ -186,6 +192,19 @@ public final class Favourites {
         if let data = encoded() {
             cloud?.set(data, forKey: Self.key)
         }
+        notifyWidgets()
+    }
+
+    /// Tell the system the gallery's shortlist has changed.
+    ///
+    /// `recommendations()` is cached, and nothing re-runs it just because the
+    /// stored favourites moved — a flag starred in the app simply never shows
+    /// up in the complication gallery until something else invalidates it.
+    /// This is the call that makes starring a flag actually reach the gallery.
+    private func notifyWidgets() {
+        #if canImport(WidgetKit)
+        WidgetCenter.shared.invalidateConfigurationRecommendations()
+        #endif
     }
 
     private func writeLocal() {

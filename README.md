@@ -245,6 +245,11 @@ iCloud.
 synchronous and cannot build a main-actor `Favourites`. It reads the same JSON
 straight out of the shared container.
 
+Starring a flag also calls `invalidateConfigurationRecommendations()`. Without
+it the shortlist is cached and a newly starred flag never reaches the gallery —
+verified in the simulator, where it stayed stale across a reinstall and a
+reboot until that call was added.
+
 None of this limits what can be chosen. The shortlist is a convenience; the
 complication's own settings list every flag with a search field.
 
