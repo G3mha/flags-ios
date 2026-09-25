@@ -37,10 +37,11 @@ public struct FlagTimelineProvider: AppIntentTimelineProvider {
 
     /// How many the gallery is willing to show.
     ///
-    /// The gallery is a scrolling list someone reads before they have decided
-    /// anything, so a long one is worse than a short one. Eight covers a
-    /// realistic set of favourites and still fits the spirit of a shortlist.
-    static let maxRecommendations = 8
+    /// Larger than a shortlist would suggest, because on the watch this is not
+    /// a shortlist — the complication picker offers these and nothing else, so
+    /// anything cut here is a flag that cannot go on a watch face at all. The
+    /// gallery scrolls, so the cost of a longer list is mild next to that.
+    static let maxRecommendations = 25
 
     /// What the widget gallery offers before anyone configures anything.
     ///

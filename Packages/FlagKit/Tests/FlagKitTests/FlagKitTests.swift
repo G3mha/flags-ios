@@ -317,10 +317,15 @@ private func id(_ code: String) -> FlagID { FlagID(collection: "countries", code
     #expect(flags.map { $0.id.code } == ["br"])
 }
 
-@Test func theGalleryStaysAShortlist() {
-    let many = ["jp", "pt", "fr", "de", "it", "es", "nl", "se", "no", "dk", "fi"].map(id)
-    let flags = FlagTimelineProvider.suggestedFlags(favourites: many, deviceRegion: "US")
+@Test func theGalleryIsCapped() {
+    // The cap has to bite somewhere, but on the watch anything cut cannot go
+    // on a face at all, so it is set well above a realistic set of favourites.
+    let many = Countries.flags.prefix(60).map(\.id)
+    let flags = FlagTimelineProvider.suggestedFlags(
+        favourites: Array(many), deviceRegion: "US"
+    )
     #expect(flags.count == FlagTimelineProvider.maxRecommendations)
+    #expect(FlagTimelineProvider.maxRecommendations >= 25)
 }
 
 @Test func unknownFavouritesAreSkippedRatherThanBlanking() {
