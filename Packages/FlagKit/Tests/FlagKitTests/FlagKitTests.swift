@@ -284,6 +284,116 @@ private func record(_ code: String, starred: Bool, at seconds: TimeInterval) -> 
     #expect(Favourites.merge(a, b) == Favourites.merge(b, a))
 }
 
+// MARK: - Cloud store wiring
+
+/// Stands in for `NSUbiquitousKeyValueStore` so the syncing paths can be
+/// exercised without an iCloud account.
+///
+/// Only the three members `Favourites` actually calls are overridden, so
+/// nothing here reaches the real daemon. This is the one part of syncing a
+/// simulator cannot show you: key-value storage does not travel between
+/// simulators, so without a fake these paths would only ever be tried for the
+/// first time on a real pair of devices.
+private final class FakeCloudStore: NSUbiquitousKeyValueStore {
+    private var storage: [String: Data] = [:]
+    private(set) var synchronizeCount = 0
+
+    override func data(forKey key: String) -> Data? { storage[key] }
+
+    override func set(_ data: Data?, forKey key: String) { storage[key] = data }
+
+    override func synchronize() -> Bool {
+        synchronizeCount += 1
+        return true
+    }
+
+    /// Pretend the other device wrote this, and announce it the way iCloud does.
+    func receive(_ data: Data) {
+        storage["favourites"] = data
+        NotificationCenter.default.post(
+            name: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+            object: self
+        )
+    }
+}
+
+private func payload(_ records: [(FlagID, FavouriteRecord)]) throws -> Data {
+    try JSONEncoder().encode(records.map(\.1))
+}
+
+/// The pull runs in a `Task`, so the change lands a turn or two later.
+@MainActor private func eventually(_ condition: () -> Bool) async -> Bool {
+    for _ in 0..<200 {
+        if condition() { return true }
+        try? await Task.sleep(for: .milliseconds(5))
+    }
+    return condition()
+}
+
+@MainActor @Test func favouritesAdoptWhatTheCloudAlreadyHas() throws {
+    // A fresh install on a second device: nothing local, everything in iCloud.
+    let cloud = FakeCloudStore()
+    cloud.set(try payload([record("br", starred: true, at: 10)]), forKey: "favourites")
+
+    let favourites = Favourites(local: makeDefaults(), cloud: cloud)
+
+    #expect(favourites.contains(FlagID(collection: "countries", code: "br")))
+    #expect(cloud.synchronizeCount == 1)
+}
+
+@MainActor @Test func starringWritesThroughToTheCloud() throws {
+    let cloud = FakeCloudStore()
+    let favourites = Favourites(local: makeDefaults(), cloud: cloud)
+    let jp = FlagID(collection: "countries", code: "jp")
+
+    favourites.toggle(jp)
+
+    let written = try #require(cloud.data(forKey: "favourites"))
+    let records = try JSONDecoder().decode([FavouriteRecord].self, from: written)
+    #expect(records.filter(\.starred).map(\.id) == [jp])
+}
+
+@MainActor @Test func theOtherDeviceStarringSomethingShowsUpHere() async throws {
+    let cloud = FakeCloudStore()
+    let favourites = Favourites(local: makeDefaults(), cloud: cloud)
+    let jp = FlagID(collection: "countries", code: "jp")
+
+    cloud.receive(try payload([record("jp", starred: true, at: 10)]))
+
+    #expect(await eventually { favourites.contains(jp) })
+}
+
+@MainActor @Test func theOtherDeviceUnstarringSomethingRemovesItHere() async throws {
+    let defaults = makeDefaults()
+    let cloud = FakeCloudStore()
+    let favourites = Favourites(local: defaults, cloud: cloud)
+    let br = FlagID(collection: "countries", code: "br")
+    favourites.toggle(br)
+
+    // Dated ahead of the local star, which happened just now.
+    cloud.receive(try payload([
+        record("br", starred: false, at: Date().timeIntervalSince1970 + 60)
+    ]))
+
+    #expect(await eventually { !favourites.contains(br) })
+    // The pull writes through locally too, or the next launch would resurrect it.
+    #expect(!Favourites(local: defaults, cloud: nil).contains(br))
+}
+
+@MainActor @Test func aStaleCloudChangeDoesNotUndoARecentLocalOne() async throws {
+    // The offline case: this device starred Brazil while iCloud still held an
+    // older unstar. Overwriting rather than merging would silently lose it.
+    let cloud = FakeCloudStore()
+    let favourites = Favourites(local: makeDefaults(), cloud: cloud)
+    let br = FlagID(collection: "countries", code: "br")
+    favourites.toggle(br)
+
+    cloud.receive(try payload([record("br", starred: false, at: 10)]))
+
+    #expect(await eventually { !favourites.contains(br) } == false)
+    #expect(favourites.contains(br))
+}
+
 // MARK: - Grouping
 
 @Test func countriesCarryTheirContinent() throws {
