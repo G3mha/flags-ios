@@ -30,12 +30,23 @@ Full colour. SwiftUI shapes measured 0.90-0.96 mean saturation, the emoji
 0.72-0.73, both carrying all three flag hues (~45 deg yellow, ~135 deg green,
 ~210 deg blue). A flattened complication would show one hue.
 
-Only Meridian was tested. Other faces may use `accented`, so the real app
-still has to branch on `widgetRenderingMode`.
+Only Meridian was tested. Other faces may use `accented`.
 
-The plain asset and `.fullColor` variants never landed in a slot, so they are
-measured by inference only — rendering mode is a property of the slot rather
-than of what you draw into it.
+### What this spike did not establish
+
+Only two of the four variants ever landed in a slot: **shapes and emoji**. The
+plain asset and `.fullColor` variants did not, and at the time that was written
+off as safe, because rendering mode is a property of the slot rather than of
+what you draw into it.
+
+The inference was right about the mode and wrong about everything else. A
+watchOS widget extension draws nothing at all for an asset catalogue image,
+which this spike could not have caught: neither variant it measured was a
+bitmap. The real app needed a separate fix, described in the complication
+notes in the top-level README.
+
+Worth remembering when reading any spike. It proves what it measured, not what
+it was aimed at.
 
 `Tools/analyze.py` prints a top-level verdict that averages the whole screen,
 including the black surround; trust the per-region numbers instead.

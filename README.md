@@ -11,23 +11,28 @@ whatever — can be added later without touching the widgets.
 
 ## Does full colour actually work?
 
-Yes, on some watch faces. This mattered enough to test before writing the app.
+Yes. This mattered enough to test before writing the app, and then again after.
 
 Complications render in one of three modes. In `fullColor` you get what you
-drew. In `accented` and `vibrant` the system flattens your view into flatly
-coloured groups, and a flag's colours are gone. Which one you get depends on
-the watch face, and Apple's docs don't spell it out per face.
+drew. In `accented` and `vibrant` the system flattens your view, and which one
+you get depends on the watch face — Apple's docs don't spell it out per face.
 
-So [`Spike/`](Spike) measured it. On watchOS 26.5, the **Meridian** face's
-circular sub-dials give third-party complications `fullColor`: the flag
-rendered at 0.90–0.96 mean saturation carrying all three of its hues. A
-flattened complication would have shown one.
+[`Spike/`](Spike) measured it first: on watchOS 26.5 the **Meridian** face's
+circular sub-dials give third-party complications `fullColor`, at 0.90–0.96
+mean saturation carrying all three of the Brazilian flag's hues.
 
-Only Meridian was measured. Infograph and the rest are untested.
+Two caveats on that spike, because it was narrower than it looked. It measured
+**SwiftUI shapes and emoji** — the asset-image variant never landed in a slot,
+so the path the real app uses went untested for a long time afterwards. And
+only Meridian was measured; other faces are untested.
 
-Other faces use `accented`. So `FlagView` branches on `widgetRenderingMode`
-and draws the country code when it can't draw the flag — a flattened flag is
-an unreadable blob, but "BR" stays legible at 30 points.
+`FlagView` draws the flag in **every** mode. It used to swap in the country
+code whenever the mode was not `fullColor`, on the assumption that a flattened
+flag would be an unreadable blob. That was wrong, and because iOS Lock Screen
+accessories are always vibrant it meant they showed "BR" and nothing else.
+Vibrant rendering maps luminance rather than discarding structure: the flag
+comes through with its diamond, its disc and its stars. The country code
+survives only as the fallback for artwork that fails to load.
 
 ## Layout
 
@@ -122,40 +127,33 @@ swift test --package-path Packages/FlagKit
 xcodebuild build -project Flags.xcodeproj -scheme Flags -destination 'generic/platform=iOS'
 ```
 
-## Complication artwork: what's verified
+## Complication artwork
 
-**Full colour works.** Brazil rendered in a real complication on a real
-Meridian sub-dial, all three hues present. That is the premise of the app,
-confirmed end to end rather than inferred.
+Working, verified on a Meridian sub-dial: Brazil in full colour, all three
+hues. Getting there took three separate bugs, and the notes below exist
+because each one looked like something it wasn't.
 
-**The asset path had a bug**, found the same way. SwiftUI's
-`Image(_:bundle:)` renders nothing for these assets inside a widget
-extension, so the complication was blank. The catalogue is not the problem:
-`assetutil` shows the app's and the extension's `Assets.car` both carrying all
-514 entries, `Bundle.module` resolves, and the identical call works in the app.
+**Where the catalogue lives.** It used to be a Swift package resource, and
+`Image(_:bundle: .module)` rendered nothing for it inside a widget extension.
+It now lives in `Assets/` as a member of all four targets, resolving through
+`Bundle.main` like any ordinary widget asset.
 
-It was isolated by putting a colour behind the image. Both a
-`StaticConfiguration` and an `AppIntentConfiguration` complication showed the
-colour at 0.92-0.96 saturation, unredacted, with nothing drawn over it.
-Swapping that one branch to emoji rendered the flag. So the view, the
-timeline and the configuration type were all fine - only the asset lookup
-was broken.
+**Why the artwork is redrawn on watchOS.** A watchOS widget extension draws
+nothing for an image that came from an asset catalogue. The image is there —
+`UIImage(named:)` returns it — but SwiftUI renders empty, which is why the
+complication stayed blank while the watch app showed the same flag correctly.
+`FlagView` redraws it through a `CGContext` first. iOS needs no such thing.
 
-`FlagView` now resolves through `UIImage(named:)` against `Bundle.main`, and
-falls back to the country code when lookup fails so a complication can never
-be blank again.
+That one looks like a size limit and is not. Downscaling to 96px makes it
+render, which is a convincing wrong answer; redrawing at the **same 384px**
+also makes it render. What matters is a concrete bitmap, not a small one.
 
-The catalogue itself moved out of the package: it lives in `Assets/` and is a
-member of all four targets, so it resolves the ordinary way every widget does
-rather than through an SPM resource bundle. Verified in the built products -
-no package bundle remains, and each of the four bundles carries the flags in
-its own `Assets.car`. Total app size is unchanged at 20MB.
+**Two red herrings**, both kept in the codebase untouched because neither was
+at fault:
 
-**Still unverified at runtime.** The simulator's widget caching blocked every
-attempt: it served stale extension binaries to freshly added complications
-through reinstalls and reboots, and after the move it would not surface the
-widget in the complication gallery at all despite the log showing its kind
-registered. Confirm on a device.
+- An AppIntents error, `FlagEntity is not a registered AppEntity identifier`,
+  fires on every watch snapshot. The flag resolves regardless.
+- `recommendations()` changes nothing when emptied.
 
 ## Layout note
 
