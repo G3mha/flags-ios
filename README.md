@@ -88,15 +88,30 @@ already-configured complication in Hong Kong keeps working.
 `Countries.excluded` is where a takedown request should land. A test asserts
 it's empty, so filling it is a deliberate act with a reason attached.
 
+One other thing trims the list, on unrelated grounds. Five ISO regions have no
+permanent population and fly their parent's flag: Bouvet Island, Clipperton
+Island, Diego Garcia, Heard & McDonald Islands, and the U.S. Outlying Islands.
+Bouvet showing Norway's flag is correct, and it still reads as a bug to anyone
+scrolling past it. `Countries.uninhabited` drops them.
+
+That is a judgement about repeated artwork, not about who counts as a country,
+which is why it is a separate set with its own test rather than entries in
+`excluded`. Inhabited dependencies stay even when they share a flag — Réunion,
+Mayotte and Svalbard among them — because someone lives there and may want to
+pick where they are from. Ten entries still show the French tricolour.
+
+
 Club crests and game logos are trademarked in a way country flags aren't.
 That's a licensing problem for those packs, not a coding one.
 
 ## Artwork
 
-257 country flags from [flag-icons](https://github.com/lipis/flag-icons) (MIT).
-Four regions the set doesn't cover — Sark, Ceuta & Melilla, Tristan da Cunha,
-Ascension Island — fall back to emoji derived from the ISO code, so every
-country has a flag either way.
+257 country flags from [flag-icons](https://github.com/lipis/flag-icons) (MIT),
+of which 252 are listed; the five unlisted ones above keep their artwork
+because nothing looks them up. Four regions the set doesn't cover — Sark,
+Ceuta & Melilla, Tristan da Cunha, Ascension Island — fall back to emoji
+derived from the ISO code, so every country has a flag either way.
+
 
 They ship as PNG, not SVG, and that matters. Xcode's asset catalogues accept
 SVG but implement only a subset of it: 71 of these flags use `clipPath` and 60

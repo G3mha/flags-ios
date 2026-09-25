@@ -10,8 +10,14 @@ import Foundation
 /// standard list is more defensible than curating it: the basis is a published
 /// standard rather than our own judgement about who counts as a country.
 ///
-/// So `excluded` is empty on purpose. The one place we do restrict is where
-/// the platform already restricts, which `restrictions` covers.
+/// So `excluded` is empty on purpose. The one place we restrict on political
+/// grounds is where the platform already restricts, which `restrictions`
+/// covers.
+///
+/// `uninhabited` also trims the list, but on different grounds: it drops a
+/// handful of unpopulated dependencies that show a flag already in the list.
+/// That is a judgement about duplicate artwork, not about who counts as a
+/// country, and it is kept separate so the two never get confused.
 public enum Countries: FlagCollection {
     public static let id = "countries"
     public static let displayName = "Countries"
@@ -26,6 +32,28 @@ public enum Countries: FlagCollection {
     /// This exists so that a takedown request has an obvious place to land.
     /// Anything added wants a comment saying who asked and when.
     static let excluded: Set<String> = []
+
+    /// Places with no permanent population that fly their parent's flag.
+    ///
+    /// Each one repeats a picture the list already shows under the country it
+    /// belongs to: Bouvet Island is Norway's flag, Clipperton is France's.
+    /// With nobody living there, the entry adds a duplicate and nothing else.
+    ///
+    /// Kept apart from `excluded` on purpose. That set is for flags withheld
+    /// on request, which is a political act; this one is a rule about repeated
+    /// artwork, applied only where there is no population to have a view about
+    /// it. Inhabited dependencies stay even when they fly their parent's flag
+    /// — Réunion, Mayotte and Svalbard among them — because someone lives
+    /// there and may well want to pick the place they are from.
+    ///
+    /// Lowercase, like the keys in `restrictions`.
+    static let uninhabited: Set<String> = [
+        "bv", // Bouvet Island — Norway
+        "cp", // Clipperton Island — France
+        "dg", // Diego Garcia — United Kingdom
+        "hm", // Heard & McDonald Islands — Australia
+        "um", // U.S. Outlying Islands — United States
+    ]
 
     public static var flags: [Flag] { cached }
 
@@ -71,7 +99,10 @@ public enum Countries: FlagCollection {
             .filter { $0.subRegions.isEmpty }
             .map(\.identifier)
             .filter { $0.count == 2 && $0.allSatisfy(\.isLetter) }
-            .filter { !excluded.contains($0) }
+            // Lowercased on both sides: isoRegions yields "BV", while these
+            // sets are keyed the way the rest of the file keys codes.
+            .filter { !excluded.contains($0.lowercased()) }
+            .filter { !uninhabited.contains($0.lowercased()) }
             .compactMap { code -> Flag? in
                 guard let name = locale.localizedString(forRegionCode: code) else { return nil }
                 let restriction = restriction(for: code, deviceRegion: deviceRegion)

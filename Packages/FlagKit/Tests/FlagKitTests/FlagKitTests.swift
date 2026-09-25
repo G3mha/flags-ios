@@ -99,6 +99,41 @@ import Testing
     #expect(!assetNames.isEmpty)
 }
 
+// MARK: - Unpopulated duplicates
+
+@Test func unpopulatedDependenciesAreNotOffered() {
+    // Each of these draws its parent's flag, so listing it repeats a picture
+    // already in the grid. Bouvet Island showing Norway's flag is correct and
+    // still looks like a bug to anyone scrolling past it.
+    let codes = Set(Countries.flags.map { $0.id.code.lowercased() })
+    for dropped in Countries.uninhabited {
+        #expect(!codes.contains(dropped), "\(dropped) should not be listed")
+    }
+}
+
+@Test func inhabitedDependenciesSurviveEvenWhenTheyShareAFlag() {
+    // The line is population, not duplication. People live in these, and they
+    // should be able to pick where they are from.
+    let codes = Set(Countries.flags.map { $0.id.code.lowercased() })
+    for kept in ["sj", "re", "yt", "gp", "gf", "pm", "wf", "bl", "mf", "bq"] {
+        #expect(codes.contains(kept), "\(kept) should still be listed")
+    }
+}
+
+@Test func theTwoTrimmingSetsStayDistinct() {
+    // Dropping an unpopulated duplicate is not a political exclusion. If these
+    // ever overlap, one rule is being used to do the other's job.
+    #expect(Countries.excluded.isDisjoint(with: Countries.uninhabited))
+}
+
+@Test func trimmedCodesAreLowercasedLikeTheRestOfTheFile() {
+    // isoRegions hands back "BV". A set keyed "BV" would silently match
+    // nothing once the comparison lowercases, so the convention is worth
+    // holding to.
+    #expect(Countries.uninhabited.allSatisfy { $0 == $0.lowercased() })
+    #expect(Countries.excluded.allSatisfy { $0 == $0.lowercased() })
+}
+
 // MARK: - Regional restrictions
 
 @Test func noFlagIsWithheldGlobally() {
