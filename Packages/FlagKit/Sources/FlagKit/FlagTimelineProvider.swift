@@ -50,14 +50,18 @@ public struct FlagTimelineProvider: AppIntentTimelineProvider {
     /// favourites travel over iCloud, starring a flag on the phone puts it in
     /// the watch's complication gallery.
     ///
-    /// The device's region follows, so someone who has starred nothing still
-    /// gets the flag of where they are in one tap, and the default last.
+    /// Flags opened recently come next, so putting one on a watch face does not
+    /// require committing it to a permanent list. Then the device's region, so
+    /// someone who has done neither still gets the flag of where they are in
+    /// one tap, and the default last.
     ///
-    /// None of this limits what can be chosen. The gallery is a shortlist; the
-    /// complication's own settings list every flag with a search field.
+    /// On the watch this is not a shortlist among other ways in. The
+    /// complication picker offers these and nothing else — there is no browse
+    /// behind it — so a flag missing here cannot go on a watch face.
     public func recommendations() -> [AppIntentRecommendation<SelectFlagIntent>] {
         Self.suggestedFlags(
             favourites: Favourites.storedIDs(),
+            recents: Recents.ids(),
             deviceRegion: Locale.current.region?.identifier
         )
         .map { flag in
@@ -68,14 +72,15 @@ public struct FlagTimelineProvider: AppIntentTimelineProvider {
         }
     }
 
-    /// Favourites first, then the device's region, then the default, with
-    /// duplicates dropped and the whole thing capped.
+    /// Favourites, then recently opened, then the device's region, then the
+    /// default, with duplicates dropped and the whole thing capped.
     ///
     /// Split out from `recommendations()` because that returns WidgetKit types
     /// that are awkward to assert on, while the choosing is the part with the
     /// behaviour worth testing.
     static func suggestedFlags(
         favourites: [FlagID],
+        recents: [FlagID] = [],
         deviceRegion: String?,
         registry: FlagRegistry = .shared,
         limit: Int = maxRecommendations
@@ -88,6 +93,7 @@ public struct FlagTimelineProvider: AppIntentTimelineProvider {
         }
 
         for id in favourites { add(registry.flag(for: id)) }
+        for id in recents { add(registry.flag(for: id)) }
         if let deviceRegion {
             add(registry.flag(for: FlagID(collection: Countries.id, code: deviceRegion)))
         }

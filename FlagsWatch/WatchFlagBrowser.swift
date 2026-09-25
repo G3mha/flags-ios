@@ -98,6 +98,9 @@ private struct WatchFlagDetail: View {
             .padding(.vertical, 8)
         }
         .navigationTitle(flag.abbreviation)
+        // The complication picker offers recommendations and nothing else, so
+        // this is what lets someone put a flag on a face without starring it.
+        .task { Recents.record(flag.id) }
     }
 }
 

@@ -235,11 +235,25 @@ an app and its extensions. iCloud shares between devices. Favourites need both.
 
 ## The complication gallery
 
-`recommendations()` is the shortlist the gallery offers before anyone has
-configured anything. It leads with favourites, then the device's region, then
-the default, dropping duplicates and capping at eight. Starring a flag on the
-phone therefore puts it in the watch's gallery, since favourites travel over
-iCloud.
+On the watch this is not a shortlist among other ways in. **The complication
+picker offers what `recommendations()` returns and nothing else** — there is no
+browse behind it, and no search. A flag missing from that list cannot go on a
+watch face at all. Everything below follows from that.
+
+`recommendations()` leads with favourites, then flags opened recently, then the
+device's region, then the default, dropping duplicates. Starring a flag on the
+phone puts it in the watch's gallery, since favourites travel over iCloud.
+
+Recents exist so that putting a flag on a face does not require committing it
+to a permanent list. Opening a flag's page is a weaker signal than starring it
+and a fair one: it is what someone is already doing just before they go looking
+for the watch face. `Recents` is per-device and not synced — favourites say what
+someone cares about and belong everywhere, recents say what they were looking at
+on this device.
+
+The cap is 25, which is larger than a shortlist would want. Anything cut is a
+flag that cannot reach a watch face, and the gallery scrolls, so a longer list
+is the cheaper mistake.
 
 `Favourites.storedIDs` exists because `recommendations()` is nonisolated and
 synchronous and cannot build a main-actor `Favourites`. It reads the same JSON

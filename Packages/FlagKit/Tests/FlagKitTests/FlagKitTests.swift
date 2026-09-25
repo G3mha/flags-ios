@@ -328,6 +328,58 @@ private func id(_ code: String) -> FlagID { FlagID(collection: "countries", code
     #expect(FlagTimelineProvider.maxRecommendations >= 25)
 }
 
+// MARK: - Recently opened
+
+@Test func openingAFlagMakesItOfferableWithoutStarringIt() {
+    // The point of recents. On the watch the picker shows recommendations and
+    // nothing else, so without this a flag must be starred to reach a face.
+    let flags = FlagTimelineProvider.suggestedFlags(
+        favourites: [], recents: [id("jp")], deviceRegion: "US"
+    )
+    #expect(flags.map { $0.id.code }.contains("jp"))
+}
+
+@Test func favouritesOutrankRecents() {
+    let flags = FlagTimelineProvider.suggestedFlags(
+        favourites: [id("br")], recents: [id("jp")], deviceRegion: "US"
+    )
+    #expect(flags.first?.id.code == "br")
+}
+
+@Test func aFlagBothStarredAndRecentAppearsOnce() {
+    let flags = FlagTimelineProvider.suggestedFlags(
+        favourites: [id("jp")], recents: [id("jp")], deviceRegion: nil
+    )
+    #expect(flags.filter { $0.id.code == "jp" }.count == 1)
+}
+
+@Test func recentsAreNewestFirst() {
+    let defaults = makeDefaults()
+    Recents.record(id("br"), in: defaults)
+    Recents.record(id("jp"), in: defaults)
+    #expect(Recents.ids(in: defaults) == [id("jp"), id("br")])
+}
+
+@Test func openingAFlagAgainMovesItUpRatherThanDuplicating() {
+    let defaults = makeDefaults()
+    Recents.record(id("br"), in: defaults)
+    Recents.record(id("jp"), in: defaults)
+    Recents.record(id("br"), in: defaults)
+    #expect(Recents.ids(in: defaults) == [id("br"), id("jp")])
+}
+
+@Test func recentsStopGrowing() {
+    let defaults = makeDefaults()
+    for code in Countries.flags.prefix(Recents.limit + 10).map(\.id.code) {
+        Recents.record(id(code), in: defaults)
+    }
+    #expect(Recents.ids(in: defaults).count == Recents.limit)
+}
+
+@Test func recentsStartEmpty() {
+    #expect(Recents.ids(in: makeDefaults()).isEmpty)
+}
+
 @Test func unknownFavouritesAreSkippedRatherThanBlanking() {
     // A flag from a pack that is gone must not cost the gallery a slot.
     let flags = FlagTimelineProvider.suggestedFlags(

@@ -39,6 +39,9 @@ struct FlagDetailView: View {
         }
         .navigationTitle(flag.name)
         .navigationBarTitleDisplayMode(.inline)
+        // Opening a flag is enough to offer it in the widget gallery, so
+        // putting one on a watch face does not require starring it first.
+        .task { Recents.record(flag.id) }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
