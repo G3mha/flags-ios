@@ -15,7 +15,6 @@ struct FlagComplication: Widget {
             provider: FlagTimelineProvider()
         ) { entry in
             FlagWidgetView(entry: entry)
-                .containerBackground(.clear, for: .widget)
         }
         .configurationDisplayName("Flag")
         .description("Keep a flag on your watch face.")

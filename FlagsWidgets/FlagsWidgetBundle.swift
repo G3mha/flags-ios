@@ -15,7 +15,6 @@ struct FlagWidget: Widget {
             provider: FlagTimelineProvider()
         ) { entry in
             FlagWidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
         }
         .configurationDisplayName("Flag")
         .description("Keep a flag on your Home Screen or Lock Screen.")

@@ -5,10 +5,12 @@ import WidgetKit
 public struct FlagEntry: TimelineEntry, Sendable {
     public let date: Date
     public let flag: Flag?
+    public let presentation: FlagPresentation
 
-    public init(date: Date = .now, flag: Flag?) {
+    public init(date: Date = .now, flag: Flag?, presentation: FlagPresentation = .circle) {
         self.date = date
         self.flag = flag
+        self.presentation = presentation
     }
 }
 
@@ -23,11 +25,14 @@ public struct FlagTimelineProvider: AppIntentTimelineProvider {
     }
 
     public func snapshot(for configuration: SelectFlagIntent, in context: Context) async -> FlagEntry {
-        FlagEntry(flag: configuration.flag?.flag ?? .default)
+        FlagEntry(flag: configuration.flag?.flag ?? .default,
+                  presentation: configuration.presentation)
     }
 
     public func timeline(for configuration: SelectFlagIntent, in context: Context) async -> Timeline<FlagEntry> {
-        Timeline(entries: [FlagEntry(flag: configuration.flag?.flag ?? .default)], policy: .never)
+        let entry = FlagEntry(flag: configuration.flag?.flag ?? .default,
+                              presentation: configuration.presentation)
+        return Timeline(entries: [entry], policy: .never)
     }
 
     /// What the widget gallery offers before anyone configures anything.
