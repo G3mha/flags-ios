@@ -22,6 +22,8 @@
 		BB00000000000000000000B1 /* flag-icons-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2 /* flag-icons-LICENSE.txt */; };
 		BB00000000000000000000B2 /* flag-icons-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2 /* flag-icons-LICENSE.txt */; };
 		BB00000000000000000000B3 /* flag-icons-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000F2 /* flag-icons-LICENSE.txt */; };
+		EB6F0582306821620095E4C0 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = EB6F0581306821620095E4C0 /* AppIcon.icon */; };
+		BB00000000000000000000A4 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = EB6F0581306821620095E4C0 /* AppIcon.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,6 +93,7 @@
 		BB000000000000000000002C /* FlagsWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FlagsWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB00000000000000000000F1 /* Flags.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Flags.xcassets; path = Assets/Flags.xcassets; sourceTree = "<group>"; };
 		BB00000000000000000000F2 /* flag-icons-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = "flag-icons-LICENSE.txt"; path = "Assets/flag-icons-LICENSE.txt"; sourceTree = "<group>"; };
+		EB6F0581306821620095E4C0 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = AppIcon.icon; path = Assets/AppIcon.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -203,6 +206,7 @@
 			children = (
 				BB00000000000000000000F1 /* Flags.xcassets */,
 				BB00000000000000000000F2 /* flag-icons-LICENSE.txt */,
+				EB6F0581306821620095E4C0 /* AppIcon.icon */,
 			);
 			name = Assets;
 			sourceTree = "<group>";
@@ -363,6 +367,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB00000000000000000000A0 /* Flags.xcassets in Resources */,
+				EB6F0582306821620095E4C0 /* AppIcon.icon in Resources */,
 				BB00000000000000000000B0 /* flag-icons-LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -381,6 +386,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB00000000000000000000A2 /* Flags.xcassets in Resources */,
+				BB00000000000000000000A4 /* AppIcon.icon in Resources */,
 				BB00000000000000000000B2 /* flag-icons-LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -478,6 +484,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/Flags.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -486,7 +493,6 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				CODE_SIGN_ENTITLEMENTS = Config/Flags.entitlements;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.enriccogemha.flags;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -502,6 +508,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/Flags.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -510,7 +517,6 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				CODE_SIGN_ENTITLEMENTS = Config/Flags.entitlements;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.enriccogemha.flags;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -524,9 +530,9 @@
 		BB000000000000000000001A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/FlagsWidgets.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
-				CODE_SIGN_ENTITLEMENTS = Config/FlagsWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
@@ -545,9 +551,9 @@
 		BB000000000000000000001B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/FlagsWidgets.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
-				CODE_SIGN_ENTITLEMENTS = Config/FlagsWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
@@ -568,6 +574,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/FlagsWatch.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -575,7 +582,6 @@
 				INFOPLIST_KEY_WKApplication = YES;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = dev.enriccogemha.flags;
 				MARKETING_VERSION = 1.0;
-				CODE_SIGN_ENTITLEMENTS = Config/FlagsWatch.entitlements;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.enriccogemha.flags.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -592,6 +598,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/FlagsWatch.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -599,7 +606,6 @@
 				INFOPLIST_KEY_WKApplication = YES;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = dev.enriccogemha.flags;
 				MARKETING_VERSION = 1.0;
-				CODE_SIGN_ENTITLEMENTS = Config/FlagsWatch.entitlements;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.enriccogemha.flags.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -614,9 +620,9 @@
 		BB0000000000000000000031 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/FlagsWatchWidgets.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
-				CODE_SIGN_ENTITLEMENTS = Config/FlagsWatchWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
@@ -635,9 +641,9 @@
 		BB0000000000000000000032 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/FlagsWatchWidgets.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = F35MJXTR84;
-				CODE_SIGN_ENTITLEMENTS = Config/FlagsWatchWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FlagsWatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Flags;
