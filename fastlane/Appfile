@@ -1,0 +1,9 @@
+# The app these lanes talk about. Nothing personal lives here: who is signing
+# in comes from an App Store Connect API key, passed by environment, so this
+# file is the same for everybody and safe to commit.
+#
+# team_id is spelled out on purpose. This machine also has lanes for a company
+# account, and naming the team means credentials from the wrong one fail here
+# rather than doing something surprising somewhere else.
+app_identifier("dev.enriccogemha.flags")
+team_id("F35MJXTR84")

@@ -60,6 +60,11 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# The App Store Connect API key, and the environment that points at it. The
+# .p8 belongs outside the tree entirely; this is the second line of defence.
+*.p8
+fastlane/.env
 build/
 *.xcuserstate
 .DS_Store
