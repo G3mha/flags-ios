@@ -23,9 +23,6 @@
 # a credential for the whole account. *.p8 is ignored here too, so a stray
 # copy cannot be committed, but out of the tree is better than ignored.
 
-require "fileutils"
-require "tmpdir"
-
 default_platform(:ios)
 
 REQUIRED = %w[ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_PATH].freeze
@@ -44,56 +41,6 @@ def asc_api_key
     key_filepath: path,
     in_house: false,
   )
-end
-
-# Exports the archive by hand, because gym cannot do it under Xcode 26.
-#
-# Xcode 26 renamed the App Store export method from "app-store" to
-# "app-store-connect" and rejects the old spelling outright:
-#
-#   error: exportArchive exportOptionsPlist error for key "method"
-#          expected one {} but found app-store
-#
-# gym only accepts the old name -- its export_method rejects anything outside
-# a fixed list -- and it overwrites the plist's method key with that value
-# unconditionally, so there is no way to smuggle the new spelling past it.
-# fastlane 2.240.1 is the latest release as of 2026-09-26 and has the same
-# problem, so this is not one upgrade away. Delete all of this the day gym
-# learns the new name.
-def export_archive(archive_path)
-  UI.user_error!("No archive to export") if archive_path.nil? || !File.exist?(archive_path)
-
-  output = File.expand_path("../build/fastlane", __dir__)
-  FileUtils.mkdir_p(output)
-
-  plist = File.join(Dir.mktmpdir("flags-export"), "ExportOptions.plist")
-  File.write(plist, <<~XML)
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>method</key>
-      <string>app-store-connect</string>
-      <key>signingStyle</key>
-      <string>automatic</string>
-      <key>teamID</key>
-      <string>#{CredentialsManager::AppfileConfig.try_fetch_value(:team_id)}</string>
-      <key>uploadSymbols</key>
-      <true/>
-    </dict>
-    </plist>
-  XML
-
-  sh("xcodebuild", "-exportArchive",
-     "-archivePath", archive_path,
-     "-exportOptionsPlist", plist,
-     "-exportPath", output,
-     "-allowProvisioningUpdates")
-
-  ipa = Dir[File.join(output, "*.ipa")].max_by { |f| File.mtime(f) }
-  UI.user_error!("Export produced no .ipa in #{output}") if ipa.nil?
-  UI.success("Exported #{File.basename(ipa)}")
-  ipa
 end
 
 platform :ios do
@@ -124,20 +71,29 @@ platform :ios do
     # one archive carries all four targets. -allowProvisioningUpdates is what
     # lets xcodebuild register the iCloud and app group capabilities; without
     # it a signed build fails complaining the profile lacks them.
-    #
-    # Archive only. gym cannot package this -- see export_archive below.
     build_app(
       project: "Flags.xcodeproj",
       scheme: "Flags",
       configuration: "Release",
+      export_method: "app-store",
+      # Both steps need this, and they take it separately. xcargs reaches the
+      # archive; export_xcargs reaches -exportArchive. Without the second the
+      # archive signs fine with development profiles and then packaging fails
+      # with "no provisioning profile mapping was provided", because App Store
+      # export needs distribution profiles it is not allowed to go and fetch.
       xcargs: "-allowProvisioningUpdates",
-      skip_package_ipa: true,
+      export_xcargs: "-allowProvisioningUpdates",
+      # The project signs automatically. Saying so stops gym looking for a
+      # manual profile mapping for all four targets.
+      export_options: {
+        signingStyle: "automatic",
+      },
+      output_directory: "build/fastlane",
       clean: true,
     )
 
     upload_to_testflight(
       api_key: api_key,
-      ipa: export_archive(lane_context[SharedValues::XCODEBUILD_ARCHIVE]),
       # Uploading and waiting are different jobs. Apple's processing takes as
       # long as it takes, and holding the terminal open for it helps nobody.
       skip_waiting_for_build_processing: true,
