@@ -90,9 +90,22 @@ platform :ios do
     )
   end
 
-  desc "What the other lanes would sign in as. Checks the key without using it."
+  desc "Check the key actually works, without changing anything."
   lane :whoami do
     asc_api_key
-    UI.success("Key #{ENV['ASC_KEY_ID']} reads fine, for team #{CredentialsManager::AppfileConfig.try_fetch_value(:team_id)}.")
+
+    # A real round trip on purpose. Building the token proves only that the
+    # .p8 parses -- a wrong issuer id, a revoked key or a key from the other
+    # account all survive that and fail later, mid-upload. Asking Apple
+    # something harmless is what tells you the credentials are good.
+    bundle_id = CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
+    app = Spaceship::ConnectAPI::App.find(bundle_id)
+
+    if app
+      UI.success("Key #{ENV['ASC_KEY_ID']} reaches #{app.name} (#{bundle_id}).")
+    else
+      UI.success("Key #{ENV['ASC_KEY_ID']} works. No app record for #{bundle_id} yet -- " \
+                 "create it in App Store Connect before uploading a build.")
+    end
   end
 end
