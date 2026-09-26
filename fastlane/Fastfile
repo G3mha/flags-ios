@@ -76,7 +76,18 @@ platform :ios do
       scheme: "Flags",
       configuration: "Release",
       export_method: "app-store",
+      # Both steps need this, and they take it separately. xcargs reaches the
+      # archive; export_xcargs reaches -exportArchive. Without the second the
+      # archive signs fine with development profiles and then packaging fails
+      # with "no provisioning profile mapping was provided", because App Store
+      # export needs distribution profiles it is not allowed to go and fetch.
       xcargs: "-allowProvisioningUpdates",
+      export_xcargs: "-allowProvisioningUpdates",
+      # The project signs automatically. Saying so stops gym looking for a
+      # manual profile mapping for all four targets.
+      export_options: {
+        signingStyle: "automatic",
+      },
       output_directory: "build/fastlane",
       clean: true,
     )
