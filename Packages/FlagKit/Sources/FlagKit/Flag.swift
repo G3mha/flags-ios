@@ -39,6 +39,14 @@ public enum FlagArtwork: Hashable, Sendable {
 
 public struct Flag: Identifiable, Hashable, Sendable {
     public let id: FlagID
+
+    /// A second identity, for listing the same flag twice in one container.
+    ///
+    /// A favourite appears under Favourites *and* under its continent, and
+    /// SwiftUI cannot hold two views with the same identity inside one lazy
+    /// container. Sharing `id` makes the continent render an empty cell where
+    /// the favourite used to be, which reads as a missing flag.
+    public var favouritesID: String { "favourite/\(id.collection)/\(id.code)" }
     /// Already localized for display; see `Countries` for where this comes from.
     public let name: String
     /// Lowercased terms used for matching. Includes the code and the name.

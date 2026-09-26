@@ -44,7 +44,9 @@ struct FlagBrowserView: View {
                 LazyVGrid(columns: columns, spacing: 20) {
                     if !favouriteFlags.isEmpty {
                         Section {
-                            ForEach(favouriteFlags) { flag in
+                            // favouritesID, not id: the same flag is also
+                            // listed under its continent below.
+                            ForEach(favouriteFlags, id: \.favouritesID) { flag in
                                 tile(for: flag)
                             }
                         } header: {

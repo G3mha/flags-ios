@@ -20,7 +20,9 @@ struct WatchFlagBrowser: View {
             List {
                 if !favouriteFlags.isEmpty {
                     Section("Favourites") {
-                        ForEach(favouriteFlags) { row(for: $0) }
+                        // favouritesID, not id: the same flag is also in
+                        // the list below.
+                        ForEach(favouriteFlags, id: \.favouritesID) { row(for: $0) }
                     }
                 }
 
