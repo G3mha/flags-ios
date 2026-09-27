@@ -23,10 +23,8 @@ mean saturation carrying all three of the Brazilian flag's hues.
 
 Two caveats on that spike, because it was narrower than it looked. It measured
 **SwiftUI shapes and emoji** — the asset-image variant never landed in a slot,
-so the path the real app actually uses went untested. When it was finally
-tested it turned out not to work: no bitmap renders in a watch complication,
-while vector drawing does. Both things the spike measured are vector, which is
-why it saw nothing wrong. See [Complication artwork](#complication-artwork).
+so the path the real app uses went untested here and had to be confirmed
+separately. It does work; see [Complication artwork](#complication-artwork).
 And only Meridian was measured; other faces are untested.
 
 `FlagView` draws the flag in **every** mode. It used to swap in the country
@@ -158,65 +156,44 @@ Simulator builds need none of this.
 
 ## Complication artwork
 
-**A flag does not currently render in a watch complication.** The slot draws,
-the right flag is chosen, and the artwork comes out as a flat block of colour.
-The iPhone Lock Screen and Home Screen widgets are fine, and so is the watch
-app itself — this is the watch complication only.
+Working. Brazil renders in full colour on a Meridian sub-dial, and the iPhone
+Lock Screen and Home Screen widgets render on a real device.
 
-Measured 2026-09-25 on the watchOS 26.5 simulator, Meridian top sub-dial, with
-the family and rendering mode read from the environment and drawn on screen as
-dot counts rather than assumed: `accessoryCircular`, `fullColor`. All of the
-following were drawn in one view at the same time:
-
-| drawn | result |
-| --- | --- |
-| `Color.orange`, `Color.black`, `Color.green` | correct colour |
-| `Canvas { ctx.fill(Path(...), with: .color(.red)) }` | correct colour |
-| `Image(uiImage:)` from the asset catalogue | flat tint |
-| the same image redrawn through `CGContext` | flat tint |
-| a solid red `UIImage` built entirely in code | flat tint |
-| `Canvas { ctx.draw(Image(uiImage:), in:) }` | flat tint |
-
-Vector drawing renders. Rasters do not, whatever their provenance. The image
-keeps its frame — three 26pt squares stayed three distinct squares — and loses
-every pixel of its content.
-
-**Only the simulator has been checked.** No physical watch has been tried, and
-this may well be a simulator limitation. That is the next thing to establish,
-because a fix costs either the artwork's fidelity or a lot of vector work:
-flags would have to be drawn as shapes, or fall back to the country emoji,
-which the spike measured rendering at 0.72-0.73 saturation.
-
-### What this section used to claim
-
-That the complication worked, verified on a Meridian sub-dial in full colour,
-and that the reason was `FlagView` redrawing the artwork through a `CGContext`
-because a watchOS widget extension draws nothing for asset-catalogue images.
-
-Both halves are wrong. A solid red `UIImage` built in code renders no better
-than the catalogue one, so the problem was never asset catalogues, and the
-redraw never fixed it. `FlagView`, `FlagWidgetView` and the widget bundle have
-not changed since the commit that supposedly proved it worked, so nothing
-regressed — the earlier reading was simply wrong.
-
-The deciding test, worth reaching for before theorising: draw three images side
-by side — the real one, a redrawn one, and one built in code — next to a plain
-`Color`. If the code-built image is flat too, the problem is rasters as a
-category and no work on the asset pipeline will touch it.
-
-`FlagView.renderable()` still does the `CGContext` redraw on watchOS. It is
-left in because it is harmless and unproven either way on real hardware; it is
-a candidate for removal once a physical watch has been tried.
-
-The spike in `Spike/` measured SwiftUI shapes and emoji, and both rendered.
-That is consistent with all of the above: both are vector. It never landed a
-bitmap in a slot, so it never met this.
+Getting there took three real bugs and one imagined one, and the notes below
+exist because each looked like something it wasn't.
 
 **Where the catalogue lives.** It used to be a Swift package resource, and
 `Image(_:bundle: .module)` rendered nothing for it inside a widget extension.
 It now lives in `Assets/` as a member of all four targets, resolving through
-`Bundle.main`. That move is what the iOS widgets needed; it is not what the
-watch complication needed, and it did not fix it.
+`Bundle.main` like any ordinary widget asset.
+
+**Why the artwork is redrawn on watchOS.** `FlagView.renderable()` pushes the
+image through a `CGContext` first. This was introduced to fix a blank
+complication and its necessity has never been isolated cleanly, so it stays
+until someone removes it and watches a real face for a while.
+
+**A grey disc is not a bug.** WidgetKit renders the widget *gallery* with
+placeholder redaction, so the preview beside "Flag" in the complication picker
+is a flat grey circle by design, and so is a widget that has just been added
+and has not been handed a timeline yet. Neither says anything about whether
+the artwork works. Look at a configured complication on an actual face.
+
+### A misdiagnosis worth not repeating
+
+This section once claimed the opposite — that a watch complication renders no
+raster at all, that even a solid-colour `UIImage` built in code came out a
+flat tint, and that the fix would have to be vector artwork or emoji. There
+was a table of measurements and everything.
+
+It was wrong. The measurements came from diagnostic builds whose view had been
+replaced with probes, and from gallery previews, which are redacted by design.
+No configured complication was ever looked at with the shipping build. One
+screenshot of a real watch face ended the theory.
+
+The lesson is narrow and worth keeping: a widget has several states that all
+look like failure — redacted placeholder, no timeline yet, stale snapshot —
+and only one of them is a bug. Check the thing itself, in its normal state,
+before measuring anything.
 
 **Two red herrings**, both kept in the codebase untouched because neither was
 at fault:

@@ -39,12 +39,11 @@ plain asset and `.fullColor` variants did not, and at the time that was written
 off as safe, because rendering mode is a property of the slot rather than of
 what you draw into it.
 
-The inference was right about the mode and wrong about everything else. In the
-real app no bitmap renders in a watch complication at all — not one from a
-catalogue, not one built in code — while vector drawing renders in full
-colour. Shapes and emoji are both vector, so the two variants this spike
-measured were exactly the two that could not have caught it. See the
-complication notes in the top-level README.
+The inference held for the mode, and the asset path had to be confirmed
+separately in the real app rather than here. It works. Along the way it was
+briefly and confidently declared broken on the strength of diagnostic builds
+and redacted gallery previews; see the complication notes in the top-level
+README for how that went.
 
 Worth remembering when reading any spike. It proves what it measured, not what
 it was aimed at.
