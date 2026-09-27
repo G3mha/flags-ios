@@ -9,12 +9,24 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Pinned, not inherited. The runner image's default Xcode changed under us
+  # once already: macos-15 defaulted to 16.4, which cannot read an Icon
+  # Composer .icon file, and every build failed on a missing "AppIcon" asset
+  # catalogue entry until someone read the log properly.
+  #
+  # Raise this deliberately, together with the local toolchain, so CI and the
+  # machine the code is written on never disagree about what compiles.
+  XCODE_VERSION: "26.6"
+
 jobs:
   test:
     name: FlagKit tests
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+      - name: Select Xcode ${{ env.XCODE_VERSION }}
+        run: .github/select-xcode.sh "$XCODE_VERSION"
       # FlagKit declares macOS, so its tests run on the host with no simulator
       # to boot. Keeps the feedback loop short for the part that holds the logic.
       - run: swift test --package-path Packages/FlagKit
@@ -32,9 +44,8 @@ jobs:
             destination: generic/platform=watchOS
     steps:
       - uses: actions/checkout@v4
-      # Printed so a version mismatch is visible in the log rather than
-      # arriving as a confusing asset-catalogue error further down.
-      - run: xcodebuild -version
+      - name: Select Xcode ${{ env.XCODE_VERSION }}
+        run: .github/select-xcode.sh "$XCODE_VERSION"
       - run: |
           xcodebuild build \
             -project Flags.xcodeproj \
