@@ -63,6 +63,24 @@ platform :ios do
     )
   end
 
+  desc "Push fastlane/screenshots to App Store Connect. Leaves metadata alone."
+  lane :screenshots do |options|
+    api_key = asc_api_key
+
+    upload_to_app_store(
+      api_key: api_key,
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_screenshots: false,
+      # Replace rather than add, so a second run does not leave the previous
+      # attempt's images sitting alongside the new ones.
+      overwrite_screenshots: true,
+      submit_for_review: false,
+      force: options[:force] || false,
+      precheck_include_in_app_purchases: false,
+    )
+  end
+
   desc "Build the app and upload it to TestFlight. Does not submit anything."
   lane :beta do
     api_key = asc_api_key
