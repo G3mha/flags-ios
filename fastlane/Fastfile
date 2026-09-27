@@ -119,6 +119,26 @@ platform :ios do
     )
   end
 
+  desc "Submit the current version for review. The one lane that is not a dry run."
+  lane :submit do
+    api_key = asc_api_key
+
+    app = Spaceship::ConnectAPI::App.find(
+      CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier))
+    version = app.get_edit_app_store_version
+    UI.user_error!("Nothing in PREPARE_FOR_SUBMISSION to submit.") if version.nil?
+    UI.user_error!("No build attached to #{version.version_string}.") if version.build.nil?
+
+    # Deliberately its own lane. metadata and beta both pass
+    # submit_for_review: false, because a lane that submits as a side effect
+    # of doing something else will eventually submit when nobody meant to.
+    # Asking for a review should take saying so.
+    UI.important("Submitting #{version.version_string} build #{version.build.version} for review.")
+    version.create_app_store_version_submission
+    UI.success("#{version.version_string} (#{version.build.version}) is with Apple. " \
+               "Cancel it in App Store Connect if you need to before review starts.")
+  end
+
   desc "Check the key actually works, without changing anything."
   lane :whoami do
     asc_api_key
