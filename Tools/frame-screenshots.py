@@ -82,9 +82,54 @@ def compose(src, head, sub, dest):
     canvas.convert("RGB").save(os.path.join(OUT, dest), quality=95)
     print("wrote", dest, Image.open(os.path.join(OUT, dest)).size)
 
+
+def compose_watch(src, head, sub, dest):
+    """The watch is close to square, so it sits centred rather than bleeding
+    off the bottom the way a phone screenshot does."""
+    canvas = background().convert("RGBA")
+    d = ImageDraw.Draw(canvas)
+
+    hf, sf = font(92, "Bold"), font(44, "Regular")
+    x, y = 96, 150
+    for line in head.split("\n"):
+        d.text((x, y), line, font=hf, fill=(255, 255, 255))
+        y += 104
+    y += 14
+    d.text((x, y), sub, font=sf, fill=(150, 165, 157))
+
+    shot = Image.open(os.path.join(S, src)).convert("RGB")
+    # Not larger: the source is a crop of a simulator window, so pushing it
+    # much past this starts to look soft.
+    tw = 880
+    shot = shot.resize((tw, int(shot.height * tw / shot.width)), Image.LANCZOS)
+    # The radius matches the watch's own corner, so the mask clips away the
+    # pale simulator-window background outside the bezel instead of leaving it
+    # showing in the corners.
+    card = rounded(shot, int(tw * 0.205))
+
+    # Centred in whatever is left under the text, rather than a fixed offset.
+    px = (W - tw) // 2
+    py = y + 70 + (H - (y + 70) - card.height) // 2
+    shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).rounded_rectangle(
+        [px + 20, py + 34, px + tw - 20, py + card.height + 14],
+        int(tw * 0.205), fill=(0, 0, 0, 180))
+    canvas = Image.alpha_composite(canvas, shadow.filter(ImageFilter.GaussianBlur(46)))
+    canvas.alpha_composite(card, (px, py))
+
+    canvas.convert("RGB").save(os.path.join(OUT, dest), quality=95)
+    print("wrote", dest, Image.open(os.path.join(OUT, dest)).size)
+
+
+compose_watch("watch-face.png", "A piece of home,\nall day",
+              "On your watch face, in full colour", "01-watch.png")
+compose("lock-screen.png", "Right under\nthe clock",
+        "On your Lock Screen, at a glance", "02-lock.png")
+compose("home-screen.png", "Fills the\nwhole slot",
+        "On your Home Screen, any size", "03-home.png")
 compose("01-browse.png", "Every flag,\none tap away",
-        "Around 250 countries, searchable", "01-browse.png")
+        "Around 250 countries, searchable", "04-browse.png")
 compose("02-detail.png", "Put it where\nyou'll see it",
-        "Watch face, Lock Screen, Home Screen", "02-put-it-somewhere.png")
+        "Watch face, Lock Screen, Home Screen", "05-put-it-somewhere.png")
 compose("03-favourites.png", "Star the ones\nthat matter",
-        "They follow you to your Apple Watch", "03-favourites.png")
+        "They follow you to your Apple Watch", "06-favourites.png")
