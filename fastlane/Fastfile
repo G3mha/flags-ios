@@ -134,7 +134,18 @@ platform :ios do
     # of doing something else will eventually submit when nobody meant to.
     # Asking for a review should take saying so.
     UI.important("Submitting #{version.version_string} build #{version.build.version} for review.")
-    version.create_app_store_version_submission
+
+    # The review submission flow, not version.create_app_store_version_submission.
+    # That older endpoint now answers CREATE with "does not allow 'CREATE'.
+    # Allowed operation is: DELETE" -- Apple kept it only for withdrawing.
+    # A submission is now a container: create it, add the version as an item,
+    # then submit the container.
+    platform = Spaceship::ConnectAPI::Platform::IOS
+    submission = app.get_ready_review_submission(platform: platform, includes: "items") ||
+                 app.create_review_submission(platform: platform)
+    submission.add_app_store_version_to_review_items(app_store_version_id: version.id)
+    submission.submit_for_review
+
     UI.success("#{version.version_string} (#{version.build.version}) is with Apple. " \
                "Cancel it in App Store Connect if you need to before review starts.")
   end
