@@ -97,25 +97,22 @@ def compose_watch(src, head, sub, dest):
     y += 14
     d.text((x, y), sub, font=sf, fill=(150, 165, 157))
 
-    shot = Image.open(os.path.join(S, src)).convert("RGB")
-    # Not larger: the source is a crop of a simulator window, so pushing it
-    # much past this starts to look soft.
+    # The source is a cut-out with a real alpha channel, so there is no mask
+    # and no card here: the watch's own silhouette is the shape, and the
+    # shadow is cast from that rather than from a rounded rectangle.
+    shot = Image.open(os.path.join(S, src)).convert("RGBA")
+    shot = shot.crop(shot.getchannel("A").getbbox())
+
     tw = 880
     shot = shot.resize((tw, int(shot.height * tw / shot.width)), Image.LANCZOS)
-    # The radius matches the watch's own corner, so the mask clips away the
-    # pale simulator-window background outside the bezel instead of leaving it
-    # showing in the corners.
-    card = rounded(shot, int(tw * 0.205))
 
-    # Centred in whatever is left under the text, rather than a fixed offset.
     px = (W - tw) // 2
-    py = y + 70 + (H - (y + 70) - card.height) // 2
-    shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    ImageDraw.Draw(shadow).rounded_rectangle(
-        [px + 20, py + 34, px + tw - 20, py + card.height + 14],
-        int(tw * 0.205), fill=(0, 0, 0, 180))
-    canvas = Image.alpha_composite(canvas, shadow.filter(ImageFilter.GaussianBlur(46)))
-    canvas.alpha_composite(card, (px, py))
+    py = y + 70 + (H - (y + 70) - shot.height) // 2
+
+    silhouette = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    silhouette.paste((0, 0, 0, 190), (px, py + 30), shot.getchannel("A"))
+    canvas = Image.alpha_composite(canvas, silhouette.filter(ImageFilter.GaussianBlur(44)))
+    canvas.alpha_composite(shot, (px, py))
 
     canvas.convert("RGB").save(os.path.join(OUT, dest), quality=95)
     print("wrote", dest, Image.open(os.path.join(OUT, dest)).size)
