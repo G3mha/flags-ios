@@ -23,6 +23,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Push fastlane/metadata to App Store Connect. Previews first; pass force:true to skip.
 
+### ios screenshots
+
+```sh
+[bundle exec] fastlane ios screenshots
+```
+
+Push fastlane/screenshots to App Store Connect. Leaves metadata alone.
+
 ### ios beta
 
 ```sh
@@ -31,13 +39,21 @@ Push fastlane/metadata to App Store Connect. Previews first; pass force:true to 
 
 Build the app and upload it to TestFlight. Does not submit anything.
 
+### ios submit
+
+```sh
+[bundle exec] fastlane ios submit
+```
+
+Submit the current version for review. The one lane that is not a dry run.
+
 ### ios whoami
 
 ```sh
 [bundle exec] fastlane ios whoami
 ```
 
-What the other lanes would sign in as. Checks the key without using it.
+Check the key actually works, without changing anything.
 
 ----
 
