@@ -1,0 +1,81 @@
+Flags puts a country flag on an Apple Watch face, an iPhone Lock Screen, or a
+Home Screen. There is no account, no sign-in, no purchase and no user-generated
+content, so nothing is gated. Open it and everything is there.
+
+PURPOSE AND AUDIENCE
+
+You pick a country, and its flag goes in a widget or a watch complication. It
+is for people who want a flag they care about somewhere they see it all day:
+their own country while they live abroad, or a place they have a tie to. I
+built it because I am Brazilian, I study abroad, and I wanted my flag on my
+watch face.
+
+HOW TO REACH EVERY FEATURE
+
+No credentials, no sample files, nothing to set up.
+
+1. Launch the app. The first screen is a grid of about 250 country flags,
+   grouped by continent, with a search field.
+2. Tap a flag. Its page shows the flag, its name and code, a star button, and
+   the steps for each place the flag can go.
+3. Watch face: press and hold the face, tap Edit, swipe to Complications, tap a
+   slot, choose Flags, then pick the flag.
+4. Lock Screen: press and hold it, tap Customise, tap the area under the
+   clock, choose Flags, then pick the flag.
+5. Home Screen: press and hold, tap Edit, tap Add Widget, search for Flags, add
+   it, then touch and hold the widget to pick a flag.
+6. Starring a flag keeps it at the top of the list, offers it in the watch's
+   complication picker, and syncs it to the Apple Watch over iCloud.
+
+The Apple Watch app has the same list and the same instructions.
+
+Worth knowing while reviewing: in the widget gallery and the complication
+picker, the preview next to "Flags" is a flat grey shape. That is WidgetKit
+redacting placeholder content, not a broken widget. Configure it on a face or a
+Lock Screen and the flag draws in full colour.
+
+EXTERNAL SERVICES, TOOLS AND PLATFORMS
+
+None. The app makes no network requests and has no server. All artwork ships
+inside the binary. No analytics, no crash reporting, no advertising, no
+authentication, no payment processor, no AI service, and no third-party SDKs or
+dependencies beyond Apple's own frameworks.
+
+Favourites are written to the user's own iCloud key-value store so they reach
+their Apple Watch. That is Apple's iCloud and the user's account; we cannot
+read it, and the app works with iCloud switched off.
+
+REGIONAL DIFFERENCES
+
+The app behaves the same everywhere, with one exception, which copies what the
+operating system already does with the Taiwan flag:
+
+- On a device set to China mainland the flag is not included, because Apple
+  removes it from the system emoji font there.
+- On a device set to Hong Kong or Macau it is not offered in the picker, which
+  matches Apple hiding it from the emoji keyboard while still drawing it. A
+  complication already configured with it keeps working.
+
+No other flag is treated differently anywhere. The country list comes from the
+operating system's region list, so it shifts with OS versions rather than with
+storefronts, and country names are translated by the system.
+
+THIRD-PARTY MATERIAL
+
+The app is not in a regulated industry. The only third-party material is the
+flag artwork, from flag-icons (https://github.com/lipis/flag-icons) under the
+MIT licence, which ships inside the app beside the artwork. One flag, Saint
+Helena, we assembled from flag-icons' Union Jack and a coat of arms on
+Wikimedia Commons released into the public domain by its author. The app
+holds national and territorial flags only: no club crests, badges or logos.
+
+ACCOUNTS, CONTENT AND PURCHASES
+
+- No registration or login, so there is no account deletion flow to show.
+- No user-generated content, so no reporting or blocking mechanisms.
+- Free, with no in-app purchases, subscriptions or paid features.
+- The app requests no permissions and collects no data. Privacy policy:
+  https://github.com/G3mha/flags-ios/blob/main/PRIVACY.md
+
+The source is public at https://github.com/G3mha/flags-ios if anything here
+needs checking.
