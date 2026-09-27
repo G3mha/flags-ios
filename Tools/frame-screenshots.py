@@ -2,8 +2,9 @@
 #
 # Put the plain captures in Tools/screenshot-sources and run this; the framed
 # versions land in fastlane/screenshots/en-US, where deliver expects them.
-# Capture on a 6.9" device (iPhone 17 Pro Max, 1320x2868) -- Apple scales that
-# down for every smaller size, so one set covers them all.
+# Capture iPhone on a 6.9" device (iPhone 17 Pro Max, 1320x2868), which Apple
+# scales down for every smaller iPhone. iPad is a separate requirement and
+# cannot be covered by the iPhone set: capture it on a 13" iPad (2064x2752).
 #
 #   xcrun simctl io <udid> screenshot Tools/screenshot-sources/01-browse.png
 #
@@ -19,7 +20,12 @@ S = os.path.join(ROOT, "Tools", "screenshot-sources")
 OUT = os.path.join(ROOT, "fastlane", "screenshots", "en-US")
 os.makedirs(OUT, exist_ok=True)
 
-W, H = 1320, 2868
+IPHONE = (1320, 2868)
+IPAD = (2064, 2752)
+
+# The layout below was drawn for the iPhone canvas. Everything scales off its
+# width, so the same numbers produce a proportionate iPad panel rather than
+# iPhone-sized text stranded on a much bigger page.
 
 def font(size, weight):
     f = ImageFont.truetype("/System/Library/Fonts/SFNS.ttf", size)
@@ -27,7 +33,8 @@ def font(size, weight):
     except Exception: pass
     return f
 
-def background():
+def background(size):
+    W, H = size
     # Near-black with a green cast, warming slightly toward the bottom where
     # the glow sits. Dark so the app's white UI reads as a lit panel.
     bg = Image.new("RGB", (W, H))
@@ -49,35 +56,40 @@ def rounded(im, radius):
     out.paste(im, (0, 0), mask)
     return out
 
-def compose(src, head, sub, dest):
-    canvas = background().convert("RGBA")
+def compose(src, head, sub, dest, size=IPHONE):
+    W, H = size
+    k = W / IPHONE[0]
+    canvas = background(size).convert("RGBA")
     d = ImageDraw.Draw(canvas)
 
-    hf, sf = font(92, "Bold"), font(44, "Regular")
-    x, y = 96, 150
+    hf, sf = font(int(92 * k), "Bold"), font(int(44 * k), "Regular")
+    x, y = int(96 * k), int(150 * k)
     for line in head.split("\n"):
         d.text((x, y), line, font=hf, fill=(255, 255, 255))
-        y += 104
-    y += 14
+        y += int(104 * k)
+    y += int(14 * k)
     for line in sub.split("\n"):
         d.text((x, y), line, font=sf, fill=(150, 165, 157))
-        y += 56
+        y += int(56 * k)
 
     shot = Image.open(os.path.join(S, src)).convert("RGB")
-    tw = 1032
+    tw = int(1032 * k)
     shot = shot.resize((tw, int(shot.height * tw / shot.width)), Image.LANCZOS)
-    card = rounded(shot, 66)
+    radius = int(66 * k)
+    card = rounded(shot, radius)
 
-    px, py = (W - tw) // 2, 560
+    px, py = (W - tw) // 2, int(560 * k)
     shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     ImageDraw.Draw(shadow).rounded_rectangle(
-        [px + 14, py + 26, px + tw - 14, py + card.height + 10], 66, fill=(0, 0, 0, 165))
-    canvas = Image.alpha_composite(canvas, shadow.filter(ImageFilter.GaussianBlur(38)))
+        [px + int(14 * k), py + int(26 * k), px + tw - int(14 * k), py + card.height + int(10 * k)],
+        radius, fill=(0, 0, 0, 165))
+    canvas = Image.alpha_composite(canvas, shadow.filter(ImageFilter.GaussianBlur(int(38 * k))))
 
     canvas.alpha_composite(card, (px, py))
     # A hairline edge so the white screenshot does not bleed into the glow.
     ImageDraw.Draw(canvas).rounded_rectangle(
-        [px, py, px + tw - 1, py + card.height - 1], 66, outline=(255, 255, 255, 38), width=3)
+        [px, py, px + tw - 1, py + card.height - 1], radius,
+        outline=(255, 255, 255, 38), width=max(2, int(3 * k)))
 
     canvas.convert("RGB").save(os.path.join(OUT, dest), quality=95)
     print("wrote", dest, Image.open(os.path.join(OUT, dest)).size)
@@ -86,7 +98,8 @@ def compose(src, head, sub, dest):
 def compose_watch(src, head, sub, dest):
     """The watch is close to square, so it sits centred rather than bleeding
     off the bottom the way a phone screenshot does."""
-    canvas = background().convert("RGBA")
+    W, H = IPHONE
+    canvas = background(IPHONE).convert("RGBA")
     d = ImageDraw.Draw(canvas)
 
     hf, sf = font(92, "Bold"), font(44, "Regular")
@@ -118,6 +131,35 @@ def compose_watch(src, head, sub, dest):
     print("wrote", dest, Image.open(os.path.join(OUT, dest)).size)
 
 
+
+def watch_screenshot(src, dest, size=(422, 514)):
+    """The Apple Watch slot wants the watch's own screen, not a framed panel.
+
+    The source is a cut-out of the whole device, so this insets past the case
+    and crops to the screen's aspect before resizing -- cropping rather than
+    squashing, so the face stays round."""
+    im = Image.open(os.path.join(S, src)).convert("RGBA")
+    im = im.crop(im.getchannel("A").getbbox())
+    w, h = im.size
+    inner = im.crop((int(w * 0.075), int(h * 0.055),
+                     w - int(w * 0.075), h - int(h * 0.055))).convert("RGB")
+
+    tw, th = size
+    iw, ih = inner.size
+    want, have = tw / th, iw / ih
+    if have > want:
+        nw = int(ih * want)
+        inner = inner.crop(((iw - nw) // 2, 0, (iw + nw) // 2, ih))
+    else:
+        nh = int(iw / want)
+        inner = inner.crop((0, (ih - nh) // 2, iw, (ih + nh) // 2))
+
+    inner.resize((tw, th), Image.LANCZOS).save(os.path.join(OUT, dest))
+    print("wrote", dest, size)
+
+
+watch_screenshot("watch-face.png", "watch-01-face.png")
+
 compose_watch("watch-face.png", "A piece of home,\nall day",
               "On your watch face, in full colour", "01-watch.png")
 compose("lock-screen.png", "Right under\nthe clock",
@@ -130,3 +172,9 @@ compose("02-detail.png", "Put it where\nyou'll see it",
         "Watch face, Lock Screen, Home Screen", "05-put-it-somewhere.png")
 compose("03-favourites.png", "Star the ones\nthat matter",
         "They follow you to your Apple Watch", "06-favourites.png")
+
+# iPad is its own required size and the iPhone set does not satisfy it.
+compose("ipad-browse.png", "Every flag,\none tap away",
+        "Around 250 countries, searchable", "ipad-01-browse.png", size=IPAD)
+compose("ipad-detail.png", "Put it where\nyou'll see it",
+        "Watch face, Lock Screen, Home Screen", "ipad-02-detail.png", size=IPAD)
