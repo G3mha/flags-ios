@@ -16,12 +16,19 @@ public enum FlagShape: Sendable {
 
 /// Draws a flag, adapting to whatever rendering mode the system hands us.
 ///
-/// The spike in `Spike/` established that Infograph's circular sub-dials give
-/// third-party complications `fullColor`, so the real artwork survives there.
-/// Other faces, and every iOS Lock Screen accessory, use `accented` or
-/// `vibrant`: the system flattens the view into flatly-coloured groups and the
-/// flag's colours are gone. A flattened flag is an unreadable blob, so those
-/// modes get the country code instead — which stays legible at 30 points.
+/// In `fullColor` the artwork is shown as drawn. Apple does not say which
+/// faces give that. Meridian's sub-dials do: the spike in `Spike/` measured
+/// it, and the flag was seen there in colour on a watchOS 26.5 simulator.
+///
+/// A face with a colour chosen for it renders its complications in `accented`
+/// instead, painting everything in the face's tint. An opaque bitmap flattens
+/// to a solid disc under that, so on watchOS the artwork asks for
+/// `accentedDesaturated`, which maps brightness into the tint and keeps the
+/// flag's shapes. Seen on a red Modular Ultra: a dark field, a bright diamond
+/// and a darker disc. That is as much as a tinted face allows any complication.
+///
+/// iOS Lock Screen accessories are `vibrant`, which maps luminance without
+/// being asked.
 public struct FlagView: View {
     private let flag: Flag
     private let shape: FlagShape
@@ -182,20 +189,34 @@ public struct FlagView: View {
         return context.makeImage().map(UIImage.init(cgImage:)) ?? image
     }
 
-    /// `widgetAccentedRenderingMode` keeps the colour where the system is only
-    /// tinting rather than fully desaturating, such as a tinted Home Screen.
-    /// It arrived after this package's minimum, hence the branch.
+    /// `widgetAccentedRenderingMode` arrived after this package's minimum,
+    /// hence the branch.
     @ViewBuilder private func bitmap(_ image: UIImage) -> some View {
         if #available(iOS 18, watchOS 11, *) {
             Image(uiImage: image)
                 .resizable()
-                .widgetAccentedRenderingMode(.fullColor)
+                .widgetAccentedRenderingMode(Self.accentedMode)
                 .scaledToFill()
         } else {
             Image(uiImage: image)
                 .resizable()
                 .scaledToFill()
         }
+    }
+
+    /// What to do with the artwork where the system is tinting.
+    ///
+    /// watchOS does not honour `fullColor`: asked for it on a tinted face, it
+    /// flattens the bitmap to a solid disc in the face's colour.
+    /// `accentedDesaturated` is what keeps the picture there. iOS is left
+    /// asking for `fullColor`, as it was, for a tinted Home Screen.
+    @available(iOS 18, watchOS 11, *)
+    private static var accentedMode: WidgetAccentedRenderingMode {
+        #if os(watchOS)
+        .accentedDesaturated
+        #else
+        .fullColor
+        #endif
     }
     #endif
 
