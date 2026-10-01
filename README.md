@@ -23,9 +23,15 @@ mean saturation carrying all three of the Brazilian flag's hues.
 
 Two caveats on that spike, because it was narrower than it looked. It measured
 **SwiftUI shapes and emoji** — the asset-image variant never landed in a slot,
-so the path the real app uses went untested here and had to be confirmed
-separately. It does work; see [Complication artwork](#complication-artwork).
-And only Meridian was measured; other faces are untested.
+so the path the real app uses went untested here. That path was broken, for a
+reason the spike could not have shown; see
+[Complication artwork](#complication-artwork). And only Meridian was measured.
+
+A face with a colour chosen for it is not `fullColor`. A red Modular Ultra
+renders its complications `accented`, in the face's tint. `FlagView` asks for
+`accentedDesaturated` there, which maps the flag's brightness into the tint, so
+Brazil comes through as a dark field, a bright diamond and a darker disc. Ask
+for `fullColor` on such a face and watchOS draws a solid disc instead.
 
 `FlagView` draws the flag in **every** mode. It used to swap in the country
 code whenever the mode was not `fullColor`, on the assumption that a flattened
@@ -156,44 +162,66 @@ Simulator builds need none of this.
 
 ## Complication artwork
 
-Working. Brazil renders in full colour on a Meridian sub-dial, and the iPhone
-Lock Screen and Home Screen widgets render on a real device.
+Brazil draws in full colour on a Meridian sub-dial, and in the face's tint on a
+red Modular Ultra. Both were seen in the watchOS 26.5 simulator, on an Apple
+Watch Ultra 3, with the complication placed from the paired iPhone's Watch app.
 
-Getting there took three real bugs and one imagined one, and the notes below
-exist because each looked like something it wasn't.
+Getting there took several real bugs and three wrong diagnoses, and the notes
+below exist because each looked like something it wasn't.
 
 **Where the catalogue lives.** It used to be a Swift package resource, and
 `Image(_:bundle: .module)` rendered nothing for it inside a widget extension.
 It now lives in `Assets/` as a member of all four targets, resolving through
 `Bundle.main` like any ordinary widget asset.
 
-**Why the artwork is redrawn on watchOS.** `FlagView.renderable()` pushes the
-image through a `CGContext` first. This was introduced to fix a blank
-complication and its necessity has never been isolated cleanly, so it stays
-until someone removes it and watches a real face for a while.
+**How large the artwork may be.** WidgetKit archives a widget's view, and it
+refuses any image much larger than the widget: the limit is the widget's pixel
+area times 1.44. The catalogue's 384px squares are ten times over it for a 51pt
+sub-dial. Nothing crashes. The extension logs a fault,
 
-**A grey disc is not a bug.** WidgetKit renders the widget *gallery* with
-placeholder redaction, so the preview beside "Flag" in the complication picker
-is a flat grey circle by design, and so is a widget that has just been added
-and has not been handed a timeline yet. Neither says anything about whether
-the artwork works. Look at a configured complication on an actual face.
+    Widget archival failed due to image being too large [1] - (384, 384),
+    totalArea: 147456 > max[14981.760000]
 
-### A misdiagnosis worth not repeating
+the reload fails, and the face keeps the redacted placeholder, which is a plain
+disc. Inside a widget, `FlagView.fitted` redraws the artwork at the slot's own
+pixel size, which cannot exceed the limit.
 
-This section once claimed the opposite — that a watch complication renders no
-raster at all, that even a solid-colour `UIImage` built in code came out a
-flat tint, and that the fix would have to be vector artwork or emoji. There
-was a table of measurements and everything.
+**A disc can be a bug.** The widget *gallery* is redacted by design, so the
+preview beside "Flag" in the complication picker is a flat circle whatever the
+artwork does. A complication that has been placed on a face and stays a disc is
+a different thing: its reload is failing. The view, the timeline and the bitmap
+can all be fine while that happens, so read the log before guessing:
 
-It was wrong. The measurements came from diagnostic builds whose view had been
-replaced with probes, and from gallery previews, which are redacted by design.
-No configured complication was ever looked at with the shipping build. One
-screenshot of a real watch face ended the theory.
+    xcrun simctl spawn <device> log show --last 5m --predicate \
+      'eventMessage CONTAINS "archival" OR eventMessage CONTAINS "reload: failed"'
 
-The lesson is narrow and worth keeping: a widget has several states that all
-look like failure — redacted placeholder, no timeline yet, stale snapshot —
-and only one of them is a bug. Check the thing itself, in its normal state,
-before measuring anything.
+**Placing a complication in the simulator.** Pair the watch simulator with an
+iPhone simulator, boot both, and set the face's complications from the phone's
+Watch app. A reinstalled app only shows up in that list after the watch
+simulator has been restarted.
+
+### Three misdiagnoses worth not repeating
+
+The first claimed that a watch complication renders no raster at all, that even
+a solid-colour `UIImage` built in code came out a flat tint, and that the fix
+would have to be vector artwork or emoji. The measurements came from diagnostic
+builds whose view had been replaced with probes, and from gallery previews,
+which are redacted by design.
+
+The second was the correction of the first. It concluded that the artwork
+worked and that a remaining disc was only ever a redacted preview. The disc was
+the archive limit above. A full-size `CGContext` redraw was credited with the
+fix and changed nothing, and its comment said "Not a size problem".
+
+The third blamed the intents: that the watch app needed its own
+`AppIntentsPackage` to decode a placed complication's configuration. It did
+not. FlagKit's intents are extracted into the app's metadata without one, as
+they are on iOS. Declaring it made the simulator's metadata service report the
+bundle as empty (`aggregateMetadataIsEmpty`), and then a placed complication
+really could not load its configuration.
+
+What the three have in common is that none looked at a placed complication and
+its log at the same time. The simulator shows both.
 
 **Two red herrings**, both kept in the codebase untouched because neither was
 at fault:
