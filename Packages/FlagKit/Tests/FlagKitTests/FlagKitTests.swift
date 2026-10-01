@@ -502,6 +502,31 @@ private func payload(_ records: [(FlagID, FavouriteRecord)]) throws -> Data {
     #expect(cloud.synchronizeCount == 1)
 }
 
+@MainActor @Test func whatTheCloudAlreadyHasReachesTheWidgetsToo() throws {
+    // The complication gallery reads the shared container, never a
+    // `Favourites`. Adopting iCloud's stars in memory alone leaves a watch
+    // showing them in the app and not offering them for the face.
+    let defaults = makeDefaults()
+    let cloud = FakeCloudStore()
+    cloud.set(try payload([record("br", starred: true, at: 10)]), forKey: "favourites")
+
+    _ = Favourites(local: defaults, cloud: cloud)
+
+    #expect(Favourites.storedIDs(in: defaults) == [id("br")])
+}
+
+@MainActor @Test func adoptingTheCloudKeepsWhatThisDeviceAlreadyHad() throws {
+    // Writing the merge back must not flatten it to the cloud's copy.
+    let defaults = makeDefaults()
+    Favourites(local: defaults, cloud: nil).toggle(id("jp"))
+    let cloud = FakeCloudStore()
+    cloud.set(try payload([record("br", starred: true, at: 10)]), forKey: "favourites")
+
+    _ = Favourites(local: defaults, cloud: cloud)
+
+    #expect(Set(Favourites.storedIDs(in: defaults)) == [id("jp"), id("br")])
+}
+
 @MainActor @Test func starringWritesThroughToTheCloud() throws {
     let cloud = FakeCloudStore()
     let favourites = Favourites(local: makeDefaults(), cloud: cloud)

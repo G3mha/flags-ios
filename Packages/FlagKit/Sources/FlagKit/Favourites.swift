@@ -83,10 +83,8 @@ public final class Favourites {
     ) {
         self.local = local
         self.cloud = cloud
-        var merged = Self.merge(
-            Self.decode(local.data(forKey: Self.key)),
-            Self.decode(cloud?.data(forKey: Self.key))
-        )
+        let stored = Self.decode(local.data(forKey: Self.key))
+        var merged = Self.merge(stored, Self.decode(cloud?.data(forKey: Self.key)))
         // Carry over anything starred before favourites moved into the app
         // group. Merging rather than copying means a record already in the
         // group wins if it is the newer of the two.
@@ -94,6 +92,18 @@ public final class Favourites {
             merged = Self.merge(merged, Self.decode(UserDefaults.standard.data(forKey: Self.key)))
         }
         self.records = merged
+        // Whatever iCloud or the old store contributed has to land in the
+        // shared container too, not only in this object. The widget extensions
+        // never see a `Favourites`; they read the container. Without this a
+        // flag starred on the phone shows up in the watch app, because the app
+        // merged it in memory, and never reaches the watch's complication
+        // picker, because nothing wrote it where the picker looks. It only
+        // went unnoticed while the same device had also starred something,
+        // since a toggle writes the whole set.
+        if merged != stored {
+            writeLocal()
+            notifyWidgets()
+        }
         startObservingCloud()
         cloud?.synchronize()
     }
