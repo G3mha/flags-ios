@@ -158,7 +158,9 @@ iCloud capability cannot go on a wildcard profile, so the team's App IDs have
 to be explicit ones with iCloud enabled. Xcode.app registers those silently
 the first time it builds; `xcodebuild` refuses to unless given that flag, and
 fails with "provisioning profile doesn't include the iCloud capability".
-Simulator builds need none of this.
+Simulator builds need none of this to build. They still have to be signed
+before a complication will show any flag but the default, which
+[Complication artwork](#complication-artwork) explains.
 
 ## Complication artwork
 
@@ -173,7 +175,7 @@ that had never had the app before. On a physical Apple Watch Ultra, Brazil has
 been seen in full colour on Modular Ultra. No other flag and no other face has
 been tried on a physical watch.
 
-Getting there took several real bugs and three wrong diagnoses, and the notes
+Getting there took several real bugs and four wrong diagnoses, and the notes
 below exist because each looked like something it wasn't.
 
 **Where the catalogue lives.** It used to be a Swift package resource, and
@@ -207,12 +209,34 @@ build's picture in the picker. On the physical watch a row still showed a probe
 build's red disc after the fixed build was installed and drawing correctly on
 the face. Whether deleting the app clears it has not been tried.
 
+**A simulator build has to be signed to show any flag but the default.** Xcode
+signs simulator builds ad hoc, with no team. The system's intents service turns
+the widget extension away for that:
+
+    Failed to generate bundleIdentity: Unable to get teamId from
+    dev.enriccogemha.flags.watchkitapp.widgets
+    Rejecting invalid client due to requiresValidBundle
+
+The extension then logs `FlagEntity is not a registered AppEntity identifier`
+and the chosen flag arrives as nil, so every complication falls back to the
+default and draws Brazil, whatever was picked. Signing the built app with a
+development certificate is enough to stop it:
+
+    codesign --force --sign "Apple Development: <name>" \
+      FlagsWatch.app/PlugIns/FlagsWatchWidgets.appex
+    codesign --force --sign "Apple Development: <name>" FlagsWatch.app
+    xcrun simctl install <device> FlagsWatch.app
+
+With that, Afghanistan picked in the watch's picker draws Afghanistan. A device
+build always carries a team. On a physical iPhone a Home Screen widget set to
+Sweden drew Sweden.
+
 **Placing a complication in the simulator.** Pair the watch simulator with an
 iPhone simulator, boot both, and set the face's complications from the phone's
 Watch app. A reinstalled app only shows up in that list after the watch
 simulator has been restarted.
 
-### Three misdiagnoses worth not repeating
+### Four misdiagnoses worth not repeating
 
 The first claimed that a watch complication renders no raster at all, that even
 a solid-colour `UIImage` built in code came out a flat tint, and that the fix
@@ -233,16 +257,19 @@ they are on iOS. Declaring it made the simulator's metadata service report the
 bundle as empty (`aggregateMetadataIsEmpty`), and then a placed complication
 really could not load its configuration.
 
-What the three have in common is that none looked at a placed complication and
-its log at the same time. The simulator shows both.
+The fourth called an error a red herring. `FlagEntity is not a registered
+AppEntity identifier` fires on every snapshot and timeline in an unsigned
+simulator build. It was written off because the log showed the right flag in
+the request and the face showed Brazil. Brazil is the default. The request
+carries the flag, the extension fails to decode it, and the default is drawn
+instead. Nobody saw that until a second flag was placed.
 
-**Two red herrings**, both kept in the codebase untouched because neither was
-at fault:
+What the first three have in common is that none looked at a placed
+complication and its log at the same time. The simulator shows both. The fourth
+looked at both and only ever tested the default flag.
 
-- An AppIntents error, `FlagEntity is not a registered AppEntity identifier`,
-  fires on every watch snapshot. The flag resolves regardless — the intent
-  decodes with the right flag and presentation, which the logs show.
-- `recommendations()` changes nothing when emptied.
+**A red herring**, kept in the codebase untouched because it was not at fault:
+`recommendations()` changes nothing when emptied.
 
 ## Layout note
 
