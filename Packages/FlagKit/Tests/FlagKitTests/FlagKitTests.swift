@@ -502,6 +502,31 @@ private func payload(_ records: [(FlagID, FavouriteRecord)]) throws -> Data {
     #expect(cloud.synchronizeCount == 1)
 }
 
+@MainActor @Test func whatTheCloudAlreadyHasReachesTheWidgetsToo() throws {
+    // The complication gallery reads the shared container, never a
+    // `Favourites`. Adopting iCloud's stars in memory alone leaves a watch
+    // showing them in the app and not offering them for the face.
+    let defaults = makeDefaults()
+    let cloud = FakeCloudStore()
+    cloud.set(try payload([record("br", starred: true, at: 10)]), forKey: "favourites")
+
+    _ = Favourites(local: defaults, cloud: cloud)
+
+    #expect(Favourites.storedIDs(in: defaults) == [id("br")])
+}
+
+@MainActor @Test func adoptingTheCloudKeepsWhatThisDeviceAlreadyHad() throws {
+    // Writing the merge back must not flatten it to the cloud's copy.
+    let defaults = makeDefaults()
+    Favourites(local: defaults, cloud: nil).toggle(id("jp"))
+    let cloud = FakeCloudStore()
+    cloud.set(try payload([record("br", starred: true, at: 10)]), forKey: "favourites")
+
+    _ = Favourites(local: defaults, cloud: cloud)
+
+    #expect(Set(Favourites.storedIDs(in: defaults)) == [id("jp"), id("br")])
+}
+
 @MainActor @Test func starringWritesThroughToTheCloud() throws {
     let cloud = FakeCloudStore()
     let favourites = Favourites(local: makeDefaults(), cloud: cloud)
@@ -553,6 +578,49 @@ private func payload(_ records: [(FlagID, FavouriteRecord)]) throws -> Data {
 
     #expect(await eventually { !favourites.contains(br) } == false)
     #expect(favourites.contains(br))
+}
+
+// MARK: - Complication artwork size
+
+private let flagArtwork = CGSize(width: 384, height: 384)
+
+@Test func complicationArtworkIsDrawnAtTheSlotsOwnSize() {
+    // A 51pt sub-dial at 2x: the slot WidgetKit refused the 384px flag for.
+    let size = FlagView.bitmapSize(covering: CGSize(width: 51, height: 51), scale: 2, source: flagArtwork)
+    #expect(size == CGSize(width: 102, height: 102))
+}
+
+@Test func complicationArtworkStaysInsideTheArchiveLimit() {
+    // WidgetKit's ceiling is the slot's pixel area times 1.44. The full-size
+    // flag broke it in every one of these.
+    let slots: [(CGSize, CGFloat)] = [
+        (CGSize(width: 51, height: 51), 2),       // watch sub-dial
+        (CGSize(width: 76.5, height: 76.5), 2),   // the same, as the face editor draws it
+        (CGSize(width: 39, height: 39), 2),       // watch corner
+        (CGSize(width: 180, height: 76), 2),      // watch rectangular, filled
+        (CGSize(width: 72, height: 72), 3),       // iPhone Lock Screen circle
+    ]
+    for (slot, scale) in slots {
+        let size = FlagView.bitmapSize(covering: slot, scale: scale, source: flagArtwork)
+        let limit = slot.width * scale * slot.height * scale * 1.44
+        #expect(size.width * size.height <= limit)
+        #expect(flagArtwork.width * flagArtwork.height > limit)
+    }
+}
+
+@Test func artworkIsNeverScaledUp() {
+    // A Home Screen widget at 3x wants 510px of a 384px flag.
+    let size = FlagView.bitmapSize(covering: CGSize(width: 170, height: 170), scale: 3, source: flagArtwork)
+    #expect(size == flagArtwork)
+}
+
+@Test func artworkIsCutToTheSlotsShape() {
+    let size = FlagView.bitmapSize(covering: CGSize(width: 160, height: 80), scale: 2, source: flagArtwork)
+    #expect(size == CGSize(width: 320, height: 160))
+}
+
+@Test func aSlotWithNoSizeGetsNoBitmap() {
+    #expect(FlagView.bitmapSize(covering: .zero, scale: 2, source: flagArtwork) == .zero)
 }
 
 // MARK: - Grouping

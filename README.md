@@ -23,9 +23,15 @@ mean saturation carrying all three of the Brazilian flag's hues.
 
 Two caveats on that spike, because it was narrower than it looked. It measured
 **SwiftUI shapes and emoji** — the asset-image variant never landed in a slot,
-so the path the real app uses went untested here and had to be confirmed
-separately. It does work; see [Complication artwork](#complication-artwork).
-And only Meridian was measured; other faces are untested.
+so the path the real app uses went untested here. That path was broken, for a
+reason the spike could not have shown; see
+[Complication artwork](#complication-artwork). And only Meridian was measured.
+
+A face with a colour chosen for it is not `fullColor`. A red Modular Ultra
+renders its complications `accented`, in the face's tint. `FlagView` asks for
+`accentedDesaturated` there, which maps the flag's brightness into the tint, so
+Brazil comes through as a dark field, a bright diamond and a darker disc. Ask
+for `fullColor` on such a face and watchOS draws a solid disc instead.
 
 `FlagView` draws the flag in **every** mode. It used to swap in the country
 code whenever the mode was not `fullColor`, on the assumption that a flattened
@@ -152,56 +158,155 @@ iCloud capability cannot go on a wildcard profile, so the team's App IDs have
 to be explicit ones with iCloud enabled. Xcode.app registers those silently
 the first time it builds; `xcodebuild` refuses to unless given that flag, and
 fails with "provisioning profile doesn't include the iCloud capability".
-Simulator builds need none of this.
+Simulator builds need none of this to build. They still have to be signed
+before a complication will show any flag but the default, which
+[Complication artwork](#complication-artwork) explains.
 
 ## Complication artwork
 
-Working. Brazil renders in full colour on a Meridian sub-dial, and the iPhone
-Lock Screen and Home Screen widgets render on a real device.
+A flag draws in full colour in circular, corner and rectangular slots, and in
+the face's tint on a face with a colour chosen for it. The complication picker
+shows the same artwork beside each flag's name.
 
-Getting there took three real bugs and one imagined one, and the notes below
-exist because each looked like something it wasn't.
+All of that was seen in the watchOS 26.5 simulator, with Brazil, Afghanistan
+and Albania: Meridian, Infograph and Modular on an Apple Watch Ultra 3, a red
+Modular Ultra for the tint, and Activity Analog on an Apple Watch SE 3 (40mm)
+that had never had the app before. On a physical Apple Watch Ultra, Brazil has
+been seen in full colour on Modular Ultra. No other flag and no other face has
+been tried on a physical watch.
+
+Getting there took several real bugs and four wrong diagnoses, and the notes
+below exist because each looked like something it wasn't.
 
 **Where the catalogue lives.** It used to be a Swift package resource, and
 `Image(_:bundle: .module)` rendered nothing for it inside a widget extension.
 It now lives in `Assets/` as a member of all four targets, resolving through
 `Bundle.main` like any ordinary widget asset.
 
-**Why the artwork is redrawn on watchOS.** `FlagView.renderable()` pushes the
-image through a `CGContext` first. This was introduced to fix a blank
-complication and its necessity has never been isolated cleanly, so it stays
-until someone removes it and watches a real face for a while.
+**How large the artwork may be.** WidgetKit archives a widget's view, and it
+refuses any image much larger than the widget: the limit is the widget's pixel
+area times 1.44. The catalogue's 384px squares are ten times over it for a 51pt
+sub-dial. Nothing crashes. The extension logs a fault,
 
-**A grey disc is not a bug.** WidgetKit renders the widget *gallery* with
-placeholder redaction, so the preview beside "Flag" in the complication picker
-is a flat grey circle by design, and so is a widget that has just been added
-and has not been handed a timeline yet. Neither says anything about whether
-the artwork works. Look at a configured complication on an actual face.
+    Widget archival failed due to image being too large [1] - (384, 384),
+    totalArea: 147456 > max[14981.760000]
 
-### A misdiagnosis worth not repeating
+the reload fails, and the face keeps the redacted placeholder, which is a plain
+disc. Inside a widget, `FlagView.fitted` redraws the artwork at the slot's own
+pixel size, which cannot exceed the limit.
 
-This section once claimed the opposite — that a watch complication renders no
-raster at all, that even a solid-colour `UIImage` built in code came out a
-flat tint, and that the fix would have to be vector artwork or emoji. There
-was a table of measurements and everything.
+**A disc is a bug.** The complication picker draws each recommendation from
+its own snapshot, so both its Featured grid and the rows under Flags show the
+real flag. A plain disc there, or on a face, means a snapshot or a reload is
+failing. The view, the timeline and the bitmap can all be fine while that
+happens, so read the log before guessing:
 
-It was wrong. The measurements came from diagnostic builds whose view had been
-replaced with probes, and from gallery previews, which are redacted by design.
-No configured complication was ever looked at with the shipping build. One
-screenshot of a real watch face ended the theory.
+    xcrun simctl spawn <device> log show --last 5m --predicate \
+      'eventMessage CONTAINS "archival" OR eventMessage CONTAINS "reload: failed"'
 
-The lesson is narrow and worth keeping: a widget has several states that all
-look like failure — redacted placeholder, no timeline yet, stale snapshot —
-and only one of them is a bug. Check the thing itself, in its normal state,
-before measuring anything.
+A watch that has run a build with different drawing code can keep showing that
+build's picture in the picker. On the physical watch a row still showed a probe
+build's red disc after the fixed build was installed and drawing correctly on
+the face. Whether deleting the app clears it has not been tried.
 
-**Two red herrings**, both kept in the codebase untouched because neither was
-at fault:
+**A simulator build has to be signed to show any flag but the default.** Xcode
+signs simulator builds ad hoc, with no team. The system's intents service turns
+the widget extension away for that:
 
-- An AppIntents error, `FlagEntity is not a registered AppEntity identifier`,
-  fires on every watch snapshot. The flag resolves regardless — the intent
-  decodes with the right flag and presentation, which the logs show.
-- `recommendations()` changes nothing when emptied.
+    Failed to generate bundleIdentity: Unable to get teamId from
+    dev.enriccogemha.flags.watchkitapp.widgets
+    Rejecting invalid client due to requiresValidBundle
+
+The extension then logs `FlagEntity is not a registered AppEntity identifier`
+and the chosen flag arrives as nil, so every complication falls back to the
+default and draws Brazil, whatever was picked. Signing the built app with a
+development certificate is enough to stop it:
+
+    codesign --force --sign "Apple Development: <name>" \
+      FlagsWatch.app/PlugIns/FlagsWatchWidgets.appex
+    codesign --force --sign "Apple Development: <name>" FlagsWatch.app
+    xcrun simctl install <device> FlagsWatch.app
+
+With that, Afghanistan picked in the watch's picker draws Afghanistan. A device
+build always carries a team. On a physical iPhone a Home Screen widget set to
+Sweden drew Sweden.
+
+**Placing a complication in the simulator.** Pair the watch simulator with an
+iPhone simulator, boot both, and set the face's complications from the phone's
+Watch app. An app installed for the first time has needed the watch simulator
+restarted before it showed up in that list. Installing over an existing copy
+keeps it there. The phone's Face Gallery is also where to get a face the watch
+doesn't have yet: tap GET, then a variant, then Add to Watch.
+
+The watch's own editor and picker can be driven too, by a UI test bundle that
+targets `com.apple.Carousel`. `press(forDuration:)` on the face opens the face
+switcher, and from there Edit, the swipes to Complications, the slots and the
+picker's rows are ordinary elements with labels. A long press sent from outside
+the simulator never opened it.
+
+### Four misdiagnoses worth not repeating
+
+The first claimed that a watch complication renders no raster at all, that even
+a solid-colour `UIImage` built in code came out a flat tint, and that the fix
+would have to be vector artwork or emoji. The measurements came from diagnostic
+builds whose view had been replaced with probes, and from picker previews,
+which were taken to be redacted by design. They aren't. With the artwork fixed
+the picker shows the flag.
+
+The second was the correction of the first. It concluded that the artwork
+worked and that a remaining disc was only ever a redacted preview. The disc was
+the archive limit above. A full-size `CGContext` redraw was credited with the
+fix and changed nothing, and its comment said "Not a size problem".
+
+The third blamed the intents: that the watch app needed its own
+`AppIntentsPackage` to decode a placed complication's configuration. It did
+not. FlagKit's intents are extracted into the app's metadata without one, as
+they are on iOS. Declaring it made the simulator's metadata service report the
+bundle as empty (`aggregateMetadataIsEmpty`), and then a placed complication
+really could not load its configuration.
+
+The fourth called an error a red herring. `FlagEntity is not a registered
+AppEntity identifier` fires on every snapshot and timeline in an unsigned
+simulator build. It was written off because the log showed the right flag in
+the request and the face showed Brazil. Brazil is the default. The request
+carries the flag, the extension fails to decode it, and the default is drawn
+instead. Nobody saw that until a second flag was placed.
+
+What the first three have in common is that none looked at a placed
+complication and its log at the same time. The simulator shows both. The fourth
+looked at both and only ever tested the default flag.
+
+**No `AppIntentsPackage` is declared, and none is needed.** FlagKit is linked
+statically, and Xcode merges its intent metadata into every target that links
+it. All four bundles carry `SelectFlagIntent`, `FlagEntity`, `FlagEntityQuery`
+and `FlagPresentation` in `Metadata.appintents/extract.actionsdata` with
+nothing declared anywhere.
+
+Both widget extensions used to declare a package that included one from
+FlagKit, and 1.0 (3) was built that way. The declaration added an
+`extract.packagedata` naming FlagKit's package, and on every install the
+intents service logged, for each extension,
+
+    metadata `_$s7FlagKit0aB10AppIntentsV' did not match any imported symbol.
+    Unable to load metadata for bundle `dev.enriccogemha.flags.widgets`
+
+That symbol is built into the extension, not imported, which `nm -u` shows.
+Widgets and complications worked anyway. Without the declarations the log is
+clean and nothing else changed, in signed simulator builds:
+
+- iOS 26.5: a Home Screen widget kept its flag across the update, Edit Widget
+  listed and searched flags and the widget drew the one picked, and a Lock
+  Screen widget drew a flag picked there.
+- iOS 18.5: from a fresh install, Edit Widget listed and searched flags and
+  the Home Screen widget drew the one picked.
+- watchOS 26.5: complications placed before the change kept their flags, the
+  picker showed each flag's artwork, and a newly picked flag drew.
+
+None of it has been tried on a physical device, on iOS 17, or on a watchOS
+before 26.5.
+
+**A red herring**, kept in the codebase untouched because it was not at fault:
+`recommendations()` changes nothing when emptied.
 
 ## Layout note
 

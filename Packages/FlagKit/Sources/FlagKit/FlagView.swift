@@ -16,21 +16,32 @@ public enum FlagShape: Sendable {
 
 /// Draws a flag, adapting to whatever rendering mode the system hands us.
 ///
-/// The spike in `Spike/` established that Infograph's circular sub-dials give
-/// third-party complications `fullColor`, so the real artwork survives there.
-/// Other faces, and every iOS Lock Screen accessory, use `accented` or
-/// `vibrant`: the system flattens the view into flatly-coloured groups and the
-/// flag's colours are gone. A flattened flag is an unreadable blob, so those
-/// modes get the country code instead — which stays legible at 30 points.
+/// In `fullColor` the artwork is shown as drawn. Apple does not say which
+/// faces give that. Meridian's sub-dials do: the spike in `Spike/` measured
+/// it, and the flag was seen there in colour on a watchOS 26.5 simulator.
+///
+/// A face with a colour chosen for it renders its complications in `accented`
+/// instead, painting everything in the face's tint. An opaque bitmap flattens
+/// to a solid disc under that, so on watchOS the artwork asks for
+/// `accentedDesaturated`, which maps brightness into the tint and keeps the
+/// flag's shapes. Seen on a red Modular Ultra: a dark field, a bright diamond
+/// and a darker disc. That is as much as a tinted face allows any complication.
+///
+/// iOS Lock Screen accessories are `vibrant`, which maps luminance without
+/// being asked.
 public struct FlagView: View {
     private let flag: Flag
     private let shape: FlagShape
+    private let inWidget: Bool
 
-    @Environment(\.widgetRenderingMode) private var renderingMode
+    @Environment(\.displayScale) private var displayScale
 
-    public init(flag: Flag, shape: FlagShape = .circle) {
+    /// - Parameter inWidget: true when this is drawn inside a widget or a
+    ///   complication, where the size of an image is capped. See `fitted`.
+    public init(flag: Flag, shape: FlagShape = .circle, inWidget: Bool = false) {
         self.flag = flag
         self.shape = shape
+        self.inWidget = inWidget
     }
 
     public var body: some View {
@@ -76,8 +87,20 @@ public struct FlagView: View {
             // UIKit is absent on the macOS host the package's tests run on, so
             // that build keeps the plain SwiftUI path.
             #if canImport(UIKit)
-            if let image = UIImage(named: name).map(renderable) {
-                bitmap(image)
+            if let image = UIImage(named: name) {
+                if inWidget {
+                    GeometryReader { proxy in
+                        // No size yet means nothing to fit to, and handing
+                        // over the full-size artwork is the one thing a widget
+                        // must not do.
+                        if proxy.size.width > 0, proxy.size.height > 0 {
+                            bitmap(Self.fitted(image, to: proxy.size, scale: displayScale))
+                                .frame(width: proxy.size.width, height: proxy.size.height)
+                        }
+                    }
+                } else {
+                    bitmap(image)
+                }
             } else {
                 flattened
             }
@@ -89,55 +112,111 @@ public struct FlagView: View {
         }
     }
 
-    #if os(watchOS)
-    /// Redraws an asset-catalogue image into a plain bitmap.
+    /// The pixel size to draw artwork at so that it covers a slot.
     ///
-    /// A watchOS widget extension draws nothing at all for an image that came
-    /// from an asset catalogue. The image is there — `UIImage(named:)` returns
-    /// it — but SwiftUI renders empty, which is why the complication was blank
-    /// while the app showed the same flag fine.
+    /// The slot's own size in pixels, with the same proportions, so the result
+    /// covers it the way `scaledToFill` would. Never larger than the artwork:
+    /// a Home Screen widget at 3x asks for more pixels than a 384px flag has,
+    /// and inventing them helps nobody.
     ///
-    /// Not a size problem, though it looks like one at first: a 64px image
-    /// drawn in code renders, and so does this same 384px flag once it has been
-    /// through a CGContext. What matters is that the bitmap is concrete rather
-    /// than whatever deferred representation the catalogue hands back.
+    /// Kept apart from the drawing so it can be tested on the macOS host,
+    /// where there is no UIKit.
+    static func bitmapSize(covering slot: CGSize, scale: CGFloat, source: CGSize) -> CGSize {
+        guard slot.width > 0, slot.height > 0, source.width > 0, source.height > 0 else { return .zero }
+        var width = (slot.width * scale).rounded(.up)
+        var height = (slot.height * scale).rounded(.up)
+
+        // How far the artwork would have to grow to cover the slot. Above 1
+        // the slot wants more pixels than there are, so shrink the target.
+        let cover = max(width / source.width, height / source.height)
+        if cover > 1 {
+            width = max(1, (width / cover).rounded(.down))
+            height = max(1, (height / cover).rounded(.down))
+        }
+        return CGSize(width: width, height: height)
+    }
+
+    #if canImport(UIKit)
+    /// Redraws the artwork at the size it is about to be shown, in pixels.
     ///
-    /// iOS has no such trouble, so it keeps the image untouched.
-    private func renderable(_ image: UIImage) -> UIImage {
-        guard let source = image.cgImage,
+    /// WidgetKit archives a widget's view and refuses any image much larger
+    /// than the widget itself: the limit is the widget's pixel area times 1.44.
+    /// The catalogue ships 384px squares, which suits a Home Screen widget at
+    /// 3x and is ten times too big for a 51pt complication. The refusal is
+    /// logged as a fault and nothing else happens, so the face keeps showing
+    /// the redacted placeholder, which is a plain disc:
+    ///
+    ///     Widget archival failed due to image being too large [1] -
+    ///     (384, 384), totalArea: 147456 > max[14981.760000]
+    ///
+    /// The view still renders, the timeline still arrives and the bitmap still
+    /// holds the right pixels, which is why this looked like everything except
+    /// a size problem. It was once put down to asset-catalogue images not
+    /// drawing in a watch extension, and "fixed" by redrawing them at full
+    /// size, which changed nothing. It reproduces in the simulator, where the
+    /// fault can be read with `simctl spawn <device> log show`.
+    ///
+    /// Drawing at exactly the slot's size stays inside the limit for every
+    /// family and every watch, since the bitmap can never have more pixels
+    /// than the widget does.
+    static func fitted(_ image: UIImage, to slot: CGSize, scale: CGFloat) -> UIImage {
+        guard let source = image.cgImage else { return image }
+        let sourceSize = CGSize(width: source.width, height: source.height)
+        let size = bitmapSize(covering: slot, scale: scale, source: sourceSize)
+
+        guard size.width >= 1, size.height >= 1,
               let context = CGContext(
                 data: nil,
-                width: source.width,
-                height: source.height,
+                width: Int(size.width),
+                height: Int(size.height),
                 bitsPerComponent: 8,
                 bytesPerRow: 0,
                 space: CGColorSpaceCreateDeviceRGB(),
                 bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
               )
         else { return image }
+
+        // Centred and cropped, as scaledToFill would.
+        let fill = max(size.width / sourceSize.width, size.height / sourceSize.height)
+        let drawn = CGSize(width: sourceSize.width * fill, height: sourceSize.height * fill)
         context.interpolationQuality = .high
-        context.draw(source, in: CGRect(x: 0, y: 0, width: source.width, height: source.height))
+        context.draw(source, in: CGRect(
+            x: (size.width - drawn.width) / 2,
+            y: (size.height - drawn.height) / 2,
+            width: drawn.width,
+            height: drawn.height
+        ))
         return context.makeImage().map(UIImage.init(cgImage:)) ?? image
     }
-    #elseif canImport(UIKit)
-    private func renderable(_ image: UIImage) -> UIImage { image }
-    #endif
 
-    #if canImport(UIKit)
-    /// `widgetAccentedRenderingMode` keeps the colour where the system is only
-    /// tinting rather than fully desaturating, such as a tinted Home Screen.
-    /// It arrived after this package's minimum, hence the branch.
+    /// `widgetAccentedRenderingMode` arrived after this package's minimum,
+    /// hence the branch.
     @ViewBuilder private func bitmap(_ image: UIImage) -> some View {
         if #available(iOS 18, watchOS 11, *) {
             Image(uiImage: image)
                 .resizable()
-                .widgetAccentedRenderingMode(.fullColor)
+                .widgetAccentedRenderingMode(Self.accentedMode)
                 .scaledToFill()
         } else {
             Image(uiImage: image)
                 .resizable()
                 .scaledToFill()
         }
+    }
+
+    /// What to do with the artwork where the system is tinting.
+    ///
+    /// watchOS does not honour `fullColor`: asked for it on a tinted face, it
+    /// flattens the bitmap to a solid disc in the face's colour.
+    /// `accentedDesaturated` is what keeps the picture there. iOS is left
+    /// asking for `fullColor`, as it was, for a tinted Home Screen.
+    @available(iOS 18, watchOS 11, *)
+    private static var accentedMode: WidgetAccentedRenderingMode {
+        #if os(watchOS)
+        .accentedDesaturated
+        #else
+        .fullColor
+        #endif
     }
     #endif
 
