@@ -233,8 +233,16 @@ Sweden drew Sweden.
 
 **Placing a complication in the simulator.** Pair the watch simulator with an
 iPhone simulator, boot both, and set the face's complications from the phone's
-Watch app. A reinstalled app only shows up in that list after the watch
-simulator has been restarted.
+Watch app. An app installed for the first time has needed the watch simulator
+restarted before it showed up in that list. Installing over an existing copy
+keeps it there. The phone's Face Gallery is also where to get a face the watch
+doesn't have yet: tap GET, then a variant, then Add to Watch.
+
+The watch's own editor and picker can be driven too, by a UI test bundle that
+targets `com.apple.Carousel`. `press(forDuration:)` on the face opens the face
+switcher, and from there Edit, the swipes to Complications, the slots and the
+picker's rows are ordinary elements with labels. A long press sent from outside
+the simulator never opened it.
 
 ### Four misdiagnoses worth not repeating
 
