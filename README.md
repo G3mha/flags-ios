@@ -268,6 +268,21 @@ What the first three have in common is that none looked at a placed
 complication and its log at the same time. The simulator shows both. The fourth
 looked at both and only ever tested the default flag.
 
+**Still logged, and harmless as far as anyone has seen.** Both widget
+extensions declare an `AppIntentsPackage` that names FlagKit's. When the watch
+app is installed the intents service logs
+
+    metadata `_$s7FlagKit0aB10AppIntentsV' did not match any imported symbol.
+    Unable to load metadata for bundle
+    `dev.enriccogemha.flags.watchkitapp.widgets`
+
+and complications work anyway in a signed simulator build. The iOS extension
+carries the same declaration, and already did in the build that drew Sweden in
+a widget on a physical iPhone. Its log has not been read. Without the
+declaration the watch extension's metadata loads with no error and
+complications work the same, which was tried in the simulator and not shipped.
+The declaration is in 1.0 (3) and has been left alone.
+
 **A red herring**, kept in the codebase untouched because it was not at fault:
 `recommendations()` changes nothing when emptied.
 
