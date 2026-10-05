@@ -29,10 +29,10 @@ No credentials, no sample files, nothing to set up.
 
 The Apple Watch app has the same list and the same instructions.
 
-Worth knowing while reviewing: in the widget gallery and the complication
-picker, the preview next to "Flags" is a flat grey shape. That is WidgetKit
-redacting placeholder content, not a broken widget. Configure it on a face or a
-Lock Screen and the flag draws in full colour.
+Worth knowing while reviewing: the watch's complication picker is a shortlist.
+It holds the flags you starred, the ones you opened recently in the watch app,
+the flag of the device's region, and Brazil. To put any other flag on a face,
+open it in the watch app first, or star it.
 
 EXTERNAL SERVICES, TOOLS AND PLATFORMS
 
