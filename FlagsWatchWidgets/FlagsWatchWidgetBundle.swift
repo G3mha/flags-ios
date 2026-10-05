@@ -1,4 +1,3 @@
-import AppIntents
 import FlagKit
 import SwiftUI
 import WidgetKit
@@ -31,12 +30,5 @@ struct FlagComplication: Widget {
 struct FlagsWatchWidgetBundle: WidgetBundle {
     var body: some Widget {
         FlagComplication()
-    }
-}
-
-/// Pulls FlagKit's intent metadata into this extension. See FlagKitAppIntents.
-struct FlagsWatchWidgetsAppIntents: AppIntentsPackage {
-    static var includedPackages: [any AppIntentsPackage.Type] {
-        [FlagKitAppIntents.self]
     }
 }
