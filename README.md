@@ -162,9 +162,16 @@ Simulator builds need none of this.
 
 ## Complication artwork
 
-Brazil draws in full colour on a Meridian sub-dial, and in the face's tint on a
-red Modular Ultra. Both were seen in the watchOS 26.5 simulator, on an Apple
-Watch Ultra 3, with the complication placed from the paired iPhone's Watch app.
+A flag draws in full colour in circular, corner and rectangular slots, and in
+the face's tint on a face with a colour chosen for it. The complication picker
+shows the same artwork beside each flag's name.
+
+All of that was seen in the watchOS 26.5 simulator, with Brazil, Afghanistan
+and Albania: Meridian, Infograph and Modular on an Apple Watch Ultra 3, a red
+Modular Ultra for the tint, and Activity Analog on an Apple Watch SE 3 (40mm)
+that had never had the app before. On a physical Apple Watch Ultra, Brazil has
+been seen in full colour on Modular Ultra. No other flag and no other face has
+been tried on a physical watch.
 
 Getting there took several real bugs and three wrong diagnoses, and the notes
 below exist because each looked like something it wasn't.
@@ -186,14 +193,19 @@ the reload fails, and the face keeps the redacted placeholder, which is a plain
 disc. Inside a widget, `FlagView.fitted` redraws the artwork at the slot's own
 pixel size, which cannot exceed the limit.
 
-**A disc can be a bug.** The widget *gallery* is redacted by design, so the
-preview beside "Flag" in the complication picker is a flat circle whatever the
-artwork does. A complication that has been placed on a face and stays a disc is
-a different thing: its reload is failing. The view, the timeline and the bitmap
-can all be fine while that happens, so read the log before guessing:
+**A disc is a bug.** The complication picker draws each recommendation from
+its own snapshot, so both its Featured grid and the rows under Flags show the
+real flag. A plain disc there, or on a face, means a snapshot or a reload is
+failing. The view, the timeline and the bitmap can all be fine while that
+happens, so read the log before guessing:
 
     xcrun simctl spawn <device> log show --last 5m --predicate \
       'eventMessage CONTAINS "archival" OR eventMessage CONTAINS "reload: failed"'
+
+A watch that has run a build with different drawing code can keep showing that
+build's picture in the picker. On the physical watch a row still showed a probe
+build's red disc after the fixed build was installed and drawing correctly on
+the face. Whether deleting the app clears it has not been tried.
 
 **Placing a complication in the simulator.** Pair the watch simulator with an
 iPhone simulator, boot both, and set the face's complications from the phone's
@@ -205,8 +217,9 @@ simulator has been restarted.
 The first claimed that a watch complication renders no raster at all, that even
 a solid-colour `UIImage` built in code came out a flat tint, and that the fix
 would have to be vector artwork or emoji. The measurements came from diagnostic
-builds whose view had been replaced with probes, and from gallery previews,
-which are redacted by design.
+builds whose view had been replaced with probes, and from picker previews,
+which were taken to be redacted by design. They aren't. With the artwork fixed
+the picker shows the flag.
 
 The second was the correction of the first. It concluded that the artwork
 worked and that a remaining disc was only ever a redacted preview. The disc was
