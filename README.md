@@ -276,20 +276,34 @@ What the first three have in common is that none looked at a placed
 complication and its log at the same time. The simulator shows both. The fourth
 looked at both and only ever tested the default flag.
 
-**Still logged, and harmless as far as anyone has seen.** Both widget
-extensions declare an `AppIntentsPackage` that names FlagKit's. When the watch
-app is installed the intents service logs
+**No `AppIntentsPackage` is declared, and none is needed.** FlagKit is linked
+statically, and Xcode merges its intent metadata into every target that links
+it. All four bundles carry `SelectFlagIntent`, `FlagEntity`, `FlagEntityQuery`
+and `FlagPresentation` in `Metadata.appintents/extract.actionsdata` with
+nothing declared anywhere.
+
+Both widget extensions used to declare a package that included one from
+FlagKit, and 1.0 (3) was built that way. The declaration added an
+`extract.packagedata` naming FlagKit's package, and on every install the
+intents service logged, for each extension,
 
     metadata `_$s7FlagKit0aB10AppIntentsV' did not match any imported symbol.
-    Unable to load metadata for bundle
-    `dev.enriccogemha.flags.watchkitapp.widgets`
+    Unable to load metadata for bundle `dev.enriccogemha.flags.widgets`
 
-and complications work anyway in a signed simulator build. The iOS extension
-carries the same declaration, and already did in the build that drew Sweden in
-a widget on a physical iPhone. Its log has not been read. Without the
-declaration the watch extension's metadata loads with no error and
-complications work the same, which was tried in the simulator and not shipped.
-The declaration is in 1.0 (3) and has been left alone.
+That symbol is built into the extension, not imported, which `nm -u` shows.
+Widgets and complications worked anyway. Without the declarations the log is
+clean and nothing else changed, in signed simulator builds:
+
+- iOS 26.5: a Home Screen widget kept its flag across the update, Edit Widget
+  listed and searched flags and the widget drew the one picked, and a Lock
+  Screen widget drew a flag picked there.
+- iOS 18.5: from a fresh install, Edit Widget listed and searched flags and
+  the Home Screen widget drew the one picked.
+- watchOS 26.5: complications placed before the change kept their flags, the
+  picker showed each flag's artwork, and a newly picked flag drew.
+
+None of it has been tried on a physical device, on iOS 17, or on a watchOS
+before 26.5.
 
 **A red herring**, kept in the codebase untouched because it was not at fault:
 `recommendations()` changes nothing when emptied.
