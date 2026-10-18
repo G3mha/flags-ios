@@ -404,15 +404,12 @@ Note that the entitlements live in `Config/` rather than beside the sources:
 `Flags/` and `FlagsWatch/` are synchronized folders, so a file dropped in one
 becomes a bundled resource.
 
-## Before shipping## Before shipping
+## Before shipping
 
 - The region list comes from `Locale`, so it shifts with the OS version. It's
   close to ISO 3166-1 but not identical — `XK` for Kosovo is a user-assigned
   code the standard doesn't define. A test asserts the count stays between
   200 and 400 so an OS change can't quietly empty or explode it.
-- App icons are placeholders. Confirmed in the log:
-  `IconServices: Failed to find icon resources for bundle identifier
-  dev.enriccogemha.flags.watchkitapp`.
 
 ## Licence
 
