@@ -410,6 +410,13 @@ becomes a bundled resource.
   close to ISO 3166-1 but not identical — `XK` for Kosovo is a user-assigned
   code the standard doesn't define. A test asserts the count stays between
   200 and 400 so an OS change can't quietly empty or explode it.
+- The app targets iPad as well as iPhone, and App Review tests on iPads.
+  Before uploading, run the build on an iPad simulator with the newest
+  iPadOS, scroll the grid a few times, open a flag, star it, and search.
+  Build 1.0 (3) was rejected on 2026-10-18 because the grid could not be
+  scrolled on iPadOS 27: the browser wrote state on every scroll frame,
+  which rebuilt the grid mid-scroll, and iPadOS 27 resets the scroll when
+  that happens while iOS 26 does not. `FlagBrowserView` explains the fix.
 
 ## Licence
 
