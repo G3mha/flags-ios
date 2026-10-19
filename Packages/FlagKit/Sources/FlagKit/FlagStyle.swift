@@ -57,12 +57,23 @@ public enum FlagStyle: String, AppEnum, Sendable {
         }
     }
 
-    /// How much of the colour survives. 1 is untouched, 0 is black and white.
+    /// How much of the colour survives. 1 is untouched.
+    ///
+    /// Greyscale is not saturation 0: a widget archived with that drew in
+    /// full colour on iOS 27 (the simulator showed it; the timeline logged
+    /// no error), while 0.35 took. It goes through `grayscale(1)` instead.
     var saturation: Double {
         switch self {
-        case .colour, .translucent: 1
+        case .colour, .greyscale, .translucent: 1
         case .muted: 0.35
-        case .greyscale: 0
+        }
+    }
+
+    /// How far towards black and white. 1 is all the way.
+    var grey: Double {
+        switch self {
+        case .greyscale: 1
+        case .colour, .muted, .translucent: 0
         }
     }
 
@@ -78,6 +89,6 @@ public enum FlagStyle: String, AppEnum, Sendable {
 extension View {
     /// Draws the view in the given style.
     func flagStyle(_ style: FlagStyle) -> some View {
-        saturation(style.saturation).opacity(style.opacity)
+        saturation(style.saturation).grayscale(style.grey).opacity(style.opacity)
     }
 }

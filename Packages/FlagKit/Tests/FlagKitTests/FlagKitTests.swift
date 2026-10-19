@@ -654,6 +654,7 @@ private let flagArtwork = CGSize(width: 384, height: 384)
     #expect(FlagStyle.translucent.rawValue == "translucent")
     #expect(FlagStyle.colour.saturation == 1 && FlagStyle.colour.opacity == 1)
     #expect(FlagStyle.muted.saturation > 0 && FlagStyle.muted.saturation < 1 && FlagStyle.muted.opacity == 1)
-    #expect(FlagStyle.greyscale.saturation == 0 && FlagStyle.greyscale.opacity == 1)
+    #expect(FlagStyle.greyscale.grey == 1 && FlagStyle.greyscale.opacity == 1)
+    #expect(FlagStyle.colour.grey == 0 && FlagStyle.muted.grey == 0 && FlagStyle.translucent.grey == 0)
     #expect(FlagStyle.translucent.saturation == 1 && FlagStyle.translucent.opacity < 1)
 }
