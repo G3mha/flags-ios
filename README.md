@@ -373,12 +373,13 @@ watch face at all. Everything below follows from that.
 device's region, then the default, dropping duplicates. Starring a flag on the
 phone puts it in the watch's gallery, since favourites travel over iCloud.
 
-On the watch each starred flag is offered three times, in full colour,
+On the watch each starred flag is offered four times, in full colour, muted,
 greyscale and translucent, because the picker is also where a complication's
-style gets chosen: a face has no Edit Widget, and the Watch app on the phone shows this
-same list. Only starred flags, so the list does not triple; the rest come in
-full colour. On the phone it stays one row per flag, since the Home Screen
-widget has Edit Widget and the Lock Screen draws every widget its own way.
+style gets chosen: a face has no Edit Widget, and the Watch app on the phone
+shows this same list. Only starred flags, so the list does not quadruple; the
+rest come in full colour. On the phone it stays one row per flag, since the
+Home Screen widget has Edit Widget and the Lock Screen draws every widget its
+own way.
 
 Recents exist so that putting a flag on a face does not require committing it
 to a permanent list. Opening a flag's page is a weaker signal than starring it
