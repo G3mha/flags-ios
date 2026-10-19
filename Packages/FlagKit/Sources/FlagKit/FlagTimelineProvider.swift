@@ -6,11 +6,13 @@ public struct FlagEntry: TimelineEntry, Sendable {
     public let date: Date
     public let flag: Flag?
     public let presentation: FlagPresentation
+    public let style: FlagStyle
 
-    public init(date: Date = .now, flag: Flag?, presentation: FlagPresentation = .circle) {
+    public init(date: Date = .now, flag: Flag?, presentation: FlagPresentation = .circle, style: FlagStyle = .colour) {
         self.date = date
         self.flag = flag
         self.presentation = presentation
+        self.style = style
     }
 }
 
@@ -26,12 +28,14 @@ public struct FlagTimelineProvider: AppIntentTimelineProvider {
 
     public func snapshot(for configuration: SelectFlagIntent, in context: Context) async -> FlagEntry {
         FlagEntry(flag: configuration.flag?.flag ?? .default,
-                  presentation: configuration.presentation)
+                  presentation: configuration.presentation,
+                  style: configuration.style)
     }
 
     public func timeline(for configuration: SelectFlagIntent, in context: Context) async -> Timeline<FlagEntry> {
         let entry = FlagEntry(flag: configuration.flag?.flag ?? .default,
-                              presentation: configuration.presentation)
+                              presentation: configuration.presentation,
+                              style: configuration.style)
         return Timeline(entries: [entry], policy: .never)
     }
 

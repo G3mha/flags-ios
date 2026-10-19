@@ -1,0 +1,75 @@
+import AppIntents
+import SwiftUI
+
+/// How loudly the flag is drawn.
+///
+/// A flag is a block of saturated colour, and on a Home Screen or a watch face
+/// that can shout. The Lock Screen's own treatment, which renders every widget
+/// as a translucent monochrome shape, is what people reach for when they want
+/// the flag present but quiet; these give the same choice where the system
+/// does not make it for them.
+///
+/// What "translucent" shows through depends on the slot. A watch face's
+/// complication has no background of its own, so the face shows through the
+/// flag. A Home Screen widget always sits on the tile the system gives it (a
+/// clear container background is drawn as the default one, not as the
+/// wallpaper), so there the flag reads as pale rather than see-through.
+///
+/// Stored in widget configuration by raw value, so the names are fixed.
+public enum FlagStyle: String, AppEnum, Sendable {
+    /// As drawn.
+    case colour
+    /// The same shapes, with most of the colour taken out.
+    case muted
+    /// Muted and half see-through.
+    case translucent
+
+    public static let typeDisplayRepresentation = TypeDisplayRepresentation("Style")
+
+    public static let caseDisplayRepresentations: [FlagStyle: DisplayRepresentation] = [
+        .colour: DisplayRepresentation(
+            title: "Full colour",
+            subtitle: "The flag as it is"
+        ),
+        .muted: DisplayRepresentation(
+            title: "Muted",
+            subtitle: "Softer colours that sit back"
+        ),
+        .translucent: DisplayRepresentation(
+            title: "Translucent",
+            subtitle: "Half see-through"
+        ),
+    ]
+
+    /// For a line like "Japan, muted" in the watch's picker.
+    public var name: String {
+        switch self {
+        case .colour: "full colour"
+        case .muted: "muted"
+        case .translucent: "translucent"
+        }
+    }
+
+    /// How much of the colour survives. 1 is untouched.
+    var saturation: Double {
+        switch self {
+        case .colour: 1
+        case .muted, .translucent: 0.35
+        }
+    }
+
+    /// How much of the flag is let through. 1 is opaque.
+    var opacity: Double {
+        switch self {
+        case .colour, .muted: 1
+        case .translucent: 0.45
+        }
+    }
+}
+
+extension View {
+    /// Draws the view in the given style.
+    func flagStyle(_ style: FlagStyle) -> some View {
+        saturation(style.saturation).opacity(style.opacity)
+    }
+}
