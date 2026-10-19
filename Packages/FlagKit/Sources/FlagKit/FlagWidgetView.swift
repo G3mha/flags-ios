@@ -51,6 +51,7 @@ public struct FlagWidgetView: View {
     @ViewBuilder private var background: some View {
         if entry.presentation == .fill, !contentReachesEdges, let flag = entry.flag {
             FlagView(flag: flag, shape: .natural, inWidget: true)
+                .flagStyle(entry.style)
         } else {
             #if os(watchOS)
             Color.clear
@@ -69,6 +70,7 @@ public struct FlagWidgetView: View {
         case _ where entry.presentation == .fill:
             if contentReachesEdges {
                 FlagView(flag: flag, shape: .natural, inWidget: true)
+                    .flagStyle(entry.style)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 // Already filling the container behind this.
@@ -78,6 +80,7 @@ public struct FlagWidgetView: View {
         case .accessoryRectangular:
             HStack(spacing: 8) {
                 FlagView(flag: flag, shape: .roundedRect(cornerRadius: 6), inWidget: true)
+                    .flagStyle(entry.style)
                     .frame(width: 38, height: 38)
                 Text(flag.name)
                     .font(.headline)
@@ -88,6 +91,7 @@ public struct FlagWidgetView: View {
 
         default:
             FlagView(flag: flag, shape: .circle, inWidget: true)
+                .flagStyle(entry.style)
         }
     }
 }
