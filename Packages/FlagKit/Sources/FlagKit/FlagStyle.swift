@@ -19,6 +19,8 @@ import SwiftUI
 public enum FlagStyle: String, AppEnum, Sendable {
     /// As drawn.
     case colour
+    /// The same shapes, with most of the colour taken out.
+    case muted
     /// The same shapes in black and white.
     case greyscale
     /// In colour, but half see-through.
@@ -30,6 +32,10 @@ public enum FlagStyle: String, AppEnum, Sendable {
         .colour: DisplayRepresentation(
             title: "Full colour",
             subtitle: "The flag as it is"
+        ),
+        .muted: DisplayRepresentation(
+            title: "Muted",
+            subtitle: "Softer colours that sit back"
         ),
         .greyscale: DisplayRepresentation(
             title: "Greyscale",
@@ -45,6 +51,7 @@ public enum FlagStyle: String, AppEnum, Sendable {
     public var name: String {
         switch self {
         case .colour: "full colour"
+        case .muted: "muted"
         case .greyscale: "greyscale"
         case .translucent: "translucent"
         }
@@ -54,6 +61,7 @@ public enum FlagStyle: String, AppEnum, Sendable {
     var saturation: Double {
         switch self {
         case .colour, .translucent: 1
+        case .muted: 0.35
         case .greyscale: 0
         }
     }
@@ -61,7 +69,7 @@ public enum FlagStyle: String, AppEnum, Sendable {
     /// How much of the flag is let through. 1 is opaque.
     var opacity: Double {
         switch self {
-        case .colour, .greyscale: 1
+        case .colour, .muted, .greyscale: 1
         case .translucent: 0.45
         }
     }

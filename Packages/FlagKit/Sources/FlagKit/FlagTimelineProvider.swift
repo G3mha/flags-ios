@@ -79,10 +79,10 @@ public struct FlagTimelineProvider: AppIntentTimelineProvider {
             // configured: there is no Edit Widget behind it, and the Watch
             // app on the phone shows this same list. So the styles have to be
             // rows here, or nobody can have a greyscale flag on a face. Only for
-            // starred flags, to keep the list from tripling; starring is the
+            // starred flags, to keep the list from quadrupling; starring is the
             // way to say a flag matters, and that is where this costs rows.
             guard favourites.contains(flag.id) else { return [colour] }
-            return [colour] + [FlagStyle.greyscale, .translucent].map { style in
+            return [colour] + [FlagStyle.muted, .greyscale, .translucent].map { style in
                 AppIntentRecommendation(
                     intent: SelectFlagIntent(flag: FlagEntity(flag: flag), style: style),
                     description: Text(verbatim: "\(flag.name), \(style.name)")
