@@ -63,16 +63,36 @@ public struct FlagTimelineProvider: AppIntentTimelineProvider {
     /// complication picker offers these and nothing else — there is no browse
     /// behind it — so a flag missing here cannot go on a watch face.
     public func recommendations() -> [AppIntentRecommendation<SelectFlagIntent>] {
-        Self.suggestedFlags(
-            favourites: Favourites.storedIDs(),
+        let favourites = Favourites.storedIDs()
+        let flags = Self.suggestedFlags(
+            favourites: favourites,
             recents: Recents.ids(),
             deviceRegion: Locale.current.region?.identifier
         )
-        .map { flag in
-            AppIntentRecommendation(
+        return flags.flatMap { flag -> [AppIntentRecommendation<SelectFlagIntent>] in
+            let colour = AppIntentRecommendation(
                 intent: SelectFlagIntent(flag: FlagEntity(flag: flag)),
-                description: Text(flag.name)
+                description: Text(verbatim: flag.name)
             )
+            #if os(watchOS)
+            // The watch's picker is the only way a complication gets
+            // configured: there is no Edit Widget behind it, and the Watch
+            // app on the phone shows this same list. So the styles have to be
+            // rows here, or nobody can have a muted flag on a face. Only for
+            // starred flags, to keep the list from tripling; starring is the
+            // way to say a flag matters, and that is where this costs rows.
+            guard favourites.contains(flag.id) else { return [colour] }
+            return [colour] + [FlagStyle.muted, .translucent].map { style in
+                AppIntentRecommendation(
+                    intent: SelectFlagIntent(flag: FlagEntity(flag: flag), style: style),
+                    description: Text(verbatim: "\(flag.name), \(style.name)")
+                )
+            }
+            #else
+            // On the phone the Home Screen widget has Edit Widget for the
+            // style, and the Lock Screen draws every widget its own way.
+            return [colour]
+            #endif
         }
     }
 
