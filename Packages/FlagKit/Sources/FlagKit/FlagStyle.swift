@@ -19,9 +19,9 @@ import SwiftUI
 public enum FlagStyle: String, AppEnum, Sendable {
     /// As drawn.
     case colour
-    /// The same shapes, with most of the colour taken out.
-    case muted
-    /// Muted and half see-through.
+    /// The same shapes in black and white.
+    case greyscale
+    /// In colour, but half see-through.
     case translucent
 
     public static let typeDisplayRepresentation = TypeDisplayRepresentation("Style")
@@ -31,9 +31,9 @@ public enum FlagStyle: String, AppEnum, Sendable {
             title: "Full colour",
             subtitle: "The flag as it is"
         ),
-        .muted: DisplayRepresentation(
-            title: "Muted",
-            subtitle: "Softer colours that sit back"
+        .greyscale: DisplayRepresentation(
+            title: "Greyscale",
+            subtitle: "Black and white"
         ),
         .translucent: DisplayRepresentation(
             title: "Translucent",
@@ -41,27 +41,27 @@ public enum FlagStyle: String, AppEnum, Sendable {
         ),
     ]
 
-    /// For a line like "Japan, muted" in the watch's picker.
+    /// For a line like "Japan, greyscale" in the watch's picker.
     public var name: String {
         switch self {
         case .colour: "full colour"
-        case .muted: "muted"
+        case .greyscale: "greyscale"
         case .translucent: "translucent"
         }
     }
 
-    /// How much of the colour survives. 1 is untouched.
+    /// How much of the colour survives. 1 is untouched, 0 is black and white.
     var saturation: Double {
         switch self {
-        case .colour: 1
-        case .muted, .translucent: 0.35
+        case .colour, .translucent: 1
+        case .greyscale: 0
         }
     }
 
     /// How much of the flag is let through. 1 is opaque.
     var opacity: Double {
         switch self {
-        case .colour, .muted: 1
+        case .colour, .greyscale: 1
         case .translucent: 0.45
         }
     }

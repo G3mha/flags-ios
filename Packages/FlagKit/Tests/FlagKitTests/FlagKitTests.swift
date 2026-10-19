@@ -649,9 +649,9 @@ private let flagArtwork = CGSize(width: 384, height: 384)
 @Test func styleRawValuesAreWhatWidgetConfigurationsStore() {
     // Stored by raw value in every configured widget, so these cannot change.
     #expect(FlagStyle.colour.rawValue == "colour")
-    #expect(FlagStyle.muted.rawValue == "muted")
+    #expect(FlagStyle.greyscale.rawValue == "greyscale")
     #expect(FlagStyle.translucent.rawValue == "translucent")
     #expect(FlagStyle.colour.saturation == 1 && FlagStyle.colour.opacity == 1)
-    #expect(FlagStyle.muted.saturation < 1 && FlagStyle.muted.opacity == 1)
-    #expect(FlagStyle.translucent.opacity < FlagStyle.muted.opacity)
+    #expect(FlagStyle.greyscale.saturation == 0 && FlagStyle.greyscale.opacity == 1)
+    #expect(FlagStyle.translucent.saturation == 1 && FlagStyle.translucent.opacity < 1)
 }
