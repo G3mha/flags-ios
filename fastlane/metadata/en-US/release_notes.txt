@@ -1,1 +1,5 @@
-First release.
+You can now pick how a flag looks on your widgets and watch face: Full colour, Muted, Greyscale or Translucent.
+
+On a Home Screen widget, press and hold it, tap Edit Widget, and choose a Style.
+
+On Apple Watch, star a flag in the app. The complication list then offers it in all four styles.
