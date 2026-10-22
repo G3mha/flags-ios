@@ -1,4 +1,4 @@
-Build 4 fixes the iPad scrolling bug reported on 18 October.
+Version 1.1 adds a Style option to the widgets and watch complications.
 
 Flags puts a country flag on an Apple Watch face, an iPhone Lock Screen, or a
 Home Screen. There is no account, no sign-in, no purchase and no user-generated
